@@ -24,7 +24,7 @@ const map = {
         bar: 'middle'
     },
     41: { // F2
-        key: 'G',
+        key: 'F',
         asset: frullImage,
         y: 425,
         bar: 'bottom'
@@ -222,12 +222,12 @@ export default function NoteBar() {
     }, []);
 
     const onClick = useCallback(() => {
-       if(process.env.NODE_ENV !== 'development') return;
+       // if(process.env.NODE_ENV !== 'development') return;
         next()
     }, []);
 
     return <>
-        <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', marginBlock: 2, position: 'absolute', top: 800, left: 200, gap: 8}}>
+        <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', marginBlock: 2, position: 'absolute', top: 660, left: 200, gap: 8}}>
             <Toggle
                 id='cheese-status'
                 defaultChecked={showKey}
