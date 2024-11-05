@@ -221,6 +221,11 @@ export default function NoteBar() {
         setShowKey(prev => !prev)
     }, []);
 
+    const onClick = useCallback(() => {
+       if(process.env.NODE_ENV !== 'development') return;
+        next()
+    }, []);
+
     return <>
         <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', marginBlock: 2, position: 'absolute', top: 800, left: 200, gap: 8}}>
             <Toggle
@@ -231,7 +236,7 @@ export default function NoteBar() {
         </div>
         <div
             className="Note-Bar"
-            onClick={() => next()}
+            onClick={onClick}
         >
             {
                 poolKeys.current.map((key, i) => {
