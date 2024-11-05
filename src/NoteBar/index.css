@@ -1,0 +1,11 @@
+.Note-Bar{
+    margin-top: 100px;
+    position: relative;
+    width: 500px;
+    height: 442px;
+    background-color: black;
+    background-image: url('./background.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
