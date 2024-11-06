@@ -167,6 +167,36 @@ const map = {
 const defaultPoolKeys = Object.keys(map);
 
 export default function NoteBar() {
+
+    const [showLeftHalf, setShowLeftHalf] = useState(true);
+    const [showRightHalf, setShowRightHalf] = useState(true);
+
+    const dafaultPool = useRef([])
+    const poolKeys = useRef(defaultPoolKeys);
+    const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
+
+
+    const [_, setTime] = useState();
+
+    useEffect(() => {
+        let pool = [];
+        if (showLeftHalf && !showRightHalf) {
+            pool = defaultPoolKeys.slice(0, 14);
+        } else if (showRightHalf && !showLeftHalf) {
+            pool = defaultPoolKeys.slice(14);
+        } else {
+            pool = [...defaultPoolKeys];
+        }
+
+        dafaultPool.current = pool;
+        poolKeys.current = pool;
+        selectedIdx.current = Math.floor(poolKeys.current.length * Math.random());
+
+        setTime(new Date())
+
+    }, [showLeftHalf, showRightHalf]);
+
+
     const firstNote = MidiNumbers.fromNote('c2');
     const lastNote = MidiNumbers.fromNote('c6');
     const keyboardShortcuts = KeyboardShortcuts.create({
@@ -174,18 +204,13 @@ export default function NoteBar() {
         lastNote: lastNote,
         keyboardConfig: KeyboardShortcuts.HOME_ROW,
     });
-
-    const poolKeys = useRef(defaultPoolKeys);
-    const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
-
-    const [_, setTime] = useState();
     const [showKey, setShowKey] = useState(false);
 
     const next = useCallback(() => {
         let state = [...poolKeys.current];
         state.splice(selectedIdx.current, 1);
         if (!state.length) {
-            state = [...defaultPoolKeys]
+            state = [...dafaultPool.current]
         }
 
         selectedIdx.current = (Math.floor(state.length * Math.random()));
@@ -203,14 +228,12 @@ export default function NoteBar() {
                 if (command === 144 & velocity > 0) {
                     console.log({ command, note, velocity }, poolKeys.current[selectedIdx.current])
                     if (note === +poolKeys.current[selectedIdx.current]) {
-                        // console.log('jalan')
                         next();
                     }
                 }
             }
 
             const onSuccess = (midiAccess) => {
-                // console.log("Success midi", midiAccess, midiAccess.input)
                 const inputs = midiAccess.inputs;
                 inputs.forEach(input => {
                     input.addEventListener('midimessage', handleInput);
@@ -225,48 +248,30 @@ export default function NoteBar() {
     }, []);
 
 
-    //  console.log('poolKeys', poolKeys.current.length, selectedIdx.current)
-
     const onToggleChange = useCallback(() => {
         setShowKey(prev => !prev)
     }, []);
 
+    const onToggleLeftChange = useCallback(() => {
+        setShowLeftHalf(prev => !prev)
+    }, []);
+
+    const onToggleRightChange = useCallback(() => {
+        setShowRightHalf(prev => !prev)
+    }, []);
+
     const onClick = useCallback(() => {
-        // if(process.env.NODE_ENV !== 'development') return;
         next()
     }, []);
 
-    return <>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBlock: 2, position: 'absolute', top: 550, left: 50, gap: 8 }}>
-            <Toggle
-                id='cheese-status'
-                defaultChecked={showKey}
-                onChange={onToggleChange} />
-            <div htmlFor='cheese-status'> Show Key</div>
-        </div>
-        <div style={{position: 'absolute', top: 550, left: 10, width: '100%', overflowX: 'scroll', padding: '50px 20px', boxSizing: 'border-box'}}>
-            <Piano
-                noteRange={{ first: firstNote, last: lastNote }}
-                playNote={(midiNumber) => {
-                    if (midiNumber === +poolKeys.current[selectedIdx.current]) {
-                        // console.log('jalan')
-                        next();
-                    }
-                }}
-                stopNote={(midiNumber) => {
-                    // Stop playing a given note - see notes below
-                }}
-                width={1000}
-                keyboardShortcuts={keyboardShortcuts}
-            />
-        </div>
+    return <div className='Note-bar-container'>
         <div
             className="Note-Bar"
             onClick={onClick}
         >
             {
                 poolKeys.current.map((key, i) => {
-                   if (i !== selectedIdx.current) return null;
+                    if (i !== selectedIdx.current) return null;
                     const width = 53;
                     const ratio = 1.81;
                     const { asset, y, bar, key: note } = map[key];
@@ -279,9 +284,48 @@ export default function NoteBar() {
 
                     return <div key={key} style={{ width: width, height: width / ratio, position: 'absolute', left: i % 2 ? 250 : 250, top: y, backgroundImage: `url(${asset})`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain' }}>
                         {bar && <div style={{ position: 'absolute', width: width + 12, height: 4, left: -8, top: topBarMap[bar], backgroundColor: 'black' }} />}
-                        {showKey && <span style={{ position: 'absolute', left: 60, color: 'white', backgroundColor: 'orange', fontWeight: 'bold', padding: '4px 8px', borderRadius: 8 }}>{note}</span>}
+                        {showKey && <span className='Key'>{note}</span>}
                     </div>
                 })
             }
-        </div></>
+        </div>
+        <div className='Piano-wrapper'>
+            <Piano
+                noteRange={{ first: firstNote, last: lastNote }}
+                playNote={(midiNumber) => {
+                    if (midiNumber === +poolKeys.current[selectedIdx.current]) {
+                        next();
+                    }
+                }}
+                stopNote={() => { }}
+                width={1000}
+                keyboardShortcuts={keyboardShortcuts}
+            />
+        </div>
+
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='cheese-status'
+                defaultChecked={showKey}
+                onChange={onToggleChange} />
+            <div htmlFor='cheese-status'> Show Key</div>
+        </div>
+
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='left-half'
+                defaultChecked={showLeftHalf}
+                onChange={onToggleLeftChange} />
+            <div htmlFor='left-half'> Left Half</div>
+        </div>
+
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='right-half'
+                defaultChecked={showRightHalf}
+                onChange={onToggleRightChange} />
+            <div htmlFor='right-half'> Right Half</div>
+        </div>
+
+    </div>
 }

@@ -1,5 +1,12 @@
+.Note-bar-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0 8px;
+}
+
 .Note-Bar{
-    margin-top: 100px;
+    margin-top: 30px;
+    margin-bottom: 20px;
     position: relative;
     width: 500px;
     height: 442px;
@@ -9,3 +16,28 @@
     background-size: contain;
 }
 
+.Toogle-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-block: 2px;
+    gap: 8px;
+    width: 200px;
+}
+
+.Piano-wrapper {
+    width: 100%;
+    overflow-x: scroll;
+    padding: 50px 20px;
+    box-sizing: border-box;
+}
+
+.Key {
+    color: white;
+    background-color: orange;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 8px;
+    position: absolute;
+    left: 60px;
+}
