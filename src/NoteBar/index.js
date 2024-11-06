@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css'
+import { Piano, KeyboardShortcuts, MidiNumbers } from 'react-piano';
+import 'react-piano/dist/styles.css';
 import './index.css'
 import frullImage from './full.png';
 
@@ -165,6 +167,14 @@ const map = {
 const defaultPoolKeys = Object.keys(map);
 
 export default function NoteBar() {
+    const firstNote = MidiNumbers.fromNote('c2');
+    const lastNote = MidiNumbers.fromNote('c6');
+    const keyboardShortcuts = KeyboardShortcuts.create({
+        firstNote: firstNote,
+        lastNote: lastNote,
+        keyboardConfig: KeyboardShortcuts.HOME_ROW,
+    });
+
     const poolKeys = useRef(defaultPoolKeys);
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
@@ -222,17 +232,33 @@ export default function NoteBar() {
     }, []);
 
     const onClick = useCallback(() => {
-       // if(process.env.NODE_ENV !== 'development') return;
+        // if(process.env.NODE_ENV !== 'development') return;
         next()
     }, []);
 
     return <>
-        <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', marginBlock: 2, position: 'absolute', top: 660, left: 200, gap: 8}}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBlock: 2, position: 'absolute', top: 550, left: 50, gap: 8 }}>
             <Toggle
                 id='cheese-status'
                 defaultChecked={showKey}
-                onChange={onToggleChange} /> 
+                onChange={onToggleChange} />
             <div htmlFor='cheese-status'> Show Key</div>
+        </div>
+        <div style={{position: 'absolute', top: 550, left: 10, width: '100%', overflowX: 'scroll', padding: '50px 20px', boxSizing: 'border-box'}}>
+            <Piano
+                noteRange={{ first: firstNote, last: lastNote }}
+                playNote={(midiNumber) => {
+                    if (midiNumber === +poolKeys.current[selectedIdx.current]) {
+                        // console.log('jalan')
+                        next();
+                    }
+                }}
+                stopNote={(midiNumber) => {
+                    // Stop playing a given note - see notes below
+                }}
+                width={1000}
+                keyboardShortcuts={keyboardShortcuts}
+            />
         </div>
         <div
             className="Note-Bar"
@@ -240,7 +266,7 @@ export default function NoteBar() {
         >
             {
                 poolKeys.current.map((key, i) => {
-                    if (i !== selectedIdx.current) return null;
+                   if (i !== selectedIdx.current) return null;
                     const width = 53;
                     const ratio = 1.81;
                     const { asset, y, bar, key: note } = map[key];
@@ -257,6 +283,5 @@ export default function NoteBar() {
                     </div>
                 })
             }
-
         </div></>
 }
