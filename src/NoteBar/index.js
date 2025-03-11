@@ -312,14 +312,16 @@ const chordMap = {
     },
     'CMinor2': {
         symbol: 'Cm',
-        keys: [36, 36 + 3, 36 + 7], // [36, 39, 43]
+        keys: [36, 36 + 3, 36 + 7], // [36, 39, 43],
+        mask: [36, '40', 43],
     },
     'C#2': {
-        symbol: 'C#',
-        keys: [36 + 1, 36 + 1 + 4, 36 + 1 + 7], // [37, 41, 44]
+        symbol: 'C#/D♭',
+        keys: [36 + 1, 36 + 1 + 4, 36 + 1 + 7], // [37, 41, 44],
+        mask: ['38', 41, '45']
     },
     'C#m2': {
-        symbol: 'C#m',
+        symbol: 'C#m/D♭m',
         keys: [36 + 1, 36 + 1 + 3, 36 + 1 + 7], // [37, 40, 44]
     },
     'D2': {
@@ -331,11 +333,12 @@ const chordMap = {
         keys: [36 + 2, 36 + 2 + 3, 36 + 2 + 7], // [38, 41, 45]
     },
     'D#2': {
-        symbol: 'D#',
-        keys: [36 + 3, 36 + 3 + 4, 36 + 3 + 7], // [39, 43, 46]
+        symbol: 'D#/E♭',
+        keys: [36 + 3, 36 + 3 + 4, 36 + 3 + 7], // [39, 43, 46],
+        mask: ['40', 43, '47'],
     },
     'D#m2': {
-        symbol: 'D#m',
+        symbol: 'D#m/E♭m',
         keys: [36 + 3, 36 + 3 + 3, 36 + 3 + 7], // [39, 42, 46]
     },
     'E2': {
@@ -352,14 +355,15 @@ const chordMap = {
     },
     'FMinor2': {
         symbol: 'Fm',
-        keys: [36 + 5, 36 + 5 + 3, 36 + 5 + 7], // [41, 44, 48]
+        keys: [36 + 5, 36 + 5 + 3, 36 + 5 + 7], // [41, 44, 48],
+        mask: [41, '45', 48]
     },
     'F#2': {
-        symbol: 'F#',
+        symbol: 'F#/G♭',
         keys: [36 + 6, 36 + 6 + 4, 36 + 6 + 7], // [42, 46, 49]
     },
     'F#m2': {
-        symbol: 'F#m',
+        symbol: 'F#m/G♭m',
         keys: [36 + 6, 36 + 6 + 3, 36 + 6 + 7], // [42, 45, 49]
     },
     'G2': {
@@ -368,14 +372,16 @@ const chordMap = {
     },
     'GMinor2': {
         symbol: 'Gm',
-        keys: [36 + 7, 36 + 7 + 3, 36 + 7 + 7], // [43, 46, 50]
+        keys: [36 + 7, 36 + 7 + 3, 36 + 7 + 7], // [43, 46, 50],
+        mask: [43, '47', 50],
     },
     'G#2': {
-        symbol: 'G#',
-        keys: [36 + 8, 36 + 8 + 4, 36 + 8 + 7], // [44, 48, 51]
+        symbol: 'G#/A♭',
+        keys: [36 + 8, 36 + 8 + 4, 36 + 8 + 7], // [44, 48, 51],
+        mask: ['45', 48, '52']
     },
     'G#m2': {
-        symbol: 'G#m',
+        symbol: 'G#m,A♭m',
         keys: [36 + 8, 36 + 8 + 3, 36 + 8 + 7], // [44, 47, 51]
     },
     'A2': {
@@ -387,12 +393,14 @@ const chordMap = {
         keys: [36 + 9, 36 + 9 + 3, 36 + 9 + 7], // [45, 48, 52]
     },
     'A#2': {
-        symbol: 'A#',
-        keys: [36 + 10, 36 + 10 + 4, 36 + 10 + 7], // [46, 50, 53]
+        symbol: 'A#/B♭',
+        keys: [36 + 10, 36 + 10 + 4, 36 + 10 + 7], // [46, 50, 53],
+        mask: ['47', 50, 53],
     },
     'A#m2': {
-        symbol: 'A#m',
-        keys: [36 + 10, 36 + 10 + 3, 36 + 10 + 7], // [46, 49, 53]
+        symbol: 'A#m/B♭m',
+        keys: [36 + 10, 36 + 10 + 3, 36 + 10 + 7], // [46, 49, 53],
+        mask: ['47', '50', 53],
     },
     'B2': {
         symbol: 'B',
@@ -410,14 +418,16 @@ const chordMap = {
     },
     'CMinor3': {
         symbol: 'Cm',
-        keys: [48, 48 + 3, 48 + 7], // [48, 51, 55]
+        keys: [48, 48 + 3, 48 + 7], // [48, 51, 55],
+        mask: [48, '52', 55]
     },
     'C#3': {
-        symbol: 'C#',
+        symbol: 'C#/D♭',
         keys: [48 + 1, 48 + 1 + 4, 48 + 1 + 7], // [49, 53, 56]
+        mask: ['50', 53, '57']
     },
     'C#m3': {
-        symbol: 'C#m',
+       symbol: 'C#m/D♭m',
         keys: [48 + 1, 48 + 1 + 3, 48 + 1 + 7], // [49, 52, 56]
     },
     'D3': {
@@ -429,11 +439,12 @@ const chordMap = {
         keys: [48 + 2, 48 + 2 + 3, 48 + 2 + 7], // [50, 53, 57]
     },
     'D#3': {
-        symbol: 'D#',
-        keys: [48 + 3, 48 + 3 + 4, 48 + 3 + 7], // [51, 55, 58]
+        symbol: 'D#/E♭',
+        keys: [48 + 3, 48 + 3 + 4, 48 + 3 + 7], // [51, 55, 58],
+        mask: ['52', 55, '59']
     },
     'D#m3': {
-        symbol: 'D#m',
+         symbol: 'D#m/E♭m',
         keys: [48 + 3, 48 + 3 + 3, 48 + 3 + 7], // [51, 54, 58]
     },
     'E3': {
@@ -450,14 +461,15 @@ const chordMap = {
     },
     'FMinor3': {
         symbol: 'Fm',
-        keys: [48 + 5, 48 + 5 + 3, 48 + 5 + 7], // [53, 56, 60]
+        keys: [48 + 5, 48 + 5 + 3, 48 + 5 + 7], // [53, 56, 60],
+        mask: [53, '57', 60],
     },
     'F#3': {
-        symbol: 'F#',
+        symbol: 'F#/G♭',
         keys: [48 + 6, 48 + 6 + 4, 48 + 6 + 7], // [54, 58, 61]
     },
     'F#m3': {
-        symbol: 'F#m',
+        symbol: 'F#m/G♭m',
         keys: [48 + 6, 48 + 6 + 3, 48 + 6 + 7], // [54, 57, 61]
     },
     'G3': {
@@ -466,14 +478,16 @@ const chordMap = {
     },
     'GMinor3': {
         symbol: 'Gm',
-        keys: [48 + 7, 48 + 7 + 3, 48 + 7 + 7], // [55, 58, 62]
+        keys: [48 + 7, 48 + 7 + 3, 48 + 7 + 7], // [55, 58, 62],
+        mask: [55, '59', 62],
     },
     'G#3': {
-        symbol: 'G#',
-        keys: [48 + 8, 48 + 8 + 4, 48 + 8 + 7], // [56, 60, 63]
+        symbol: 'G#/A♭',
+        keys: [48 + 8, 48 + 8 + 4, 48 + 8 + 7], // [56, 60, 63],
+        mask: ['57', 60, '64'],
     },
     'G#m3': {
-        symbol: 'G#m',
+        symbol: 'G#m/A♭m',
         keys: [48 + 8, 48 + 8 + 3, 48 + 8 + 7], // [56, 59, 63]
     },
     'A3': {
@@ -485,12 +499,14 @@ const chordMap = {
         keys: [48 + 9, 48 + 9 + 3, 48 + 9 + 7], // [57, 60, 64]
     },
     'A#3': {
-        symbol: 'A#',
-        keys: [48 + 10, 48 + 10 + 4, 48 + 10 + 7], // [58, 62, 65]
+        symbol: 'A#/B♭',
+        keys: [48 + 10, 48 + 10 + 4, 48 + 10 + 7], // [58, 62, 65],
+        mask: ['59', 62, 65],
     },
     'A#m3': {
-        symbol: 'A#m',
-        keys: [48 + 10, 48 + 10 + 3, 48 + 10 + 7], // [58, 61, 65]
+        symbol: 'A#m/B♭m',
+        keys: [48 + 10, 48 + 10 + 3, 48 + 10 + 7], // [58, 61, 65],
+        mask: ['59', '62', 65],
     },
     'B3': {
         symbol: 'B',
@@ -508,14 +524,16 @@ const chordMap = {
     },
     'CMinor4': {
         symbol: 'Cm',
-        keys: [60, 60 + 3, 60 + 7], // [60, 63, 67]
+        keys: [60, 60 + 3, 60 + 7], // [60, 63, 67],
+        mask: [60, '64', 67]
     },
     'C#4': {
-        symbol: 'C#',
-        keys: [60 + 1, 60 + 1 + 4, 60 + 1 + 7], // [61, 65, 68]
+        symbol: 'C#/D♭',
+        keys: [60 + 1, 60 + 1 + 4, 60 + 1 + 7], // [61, 65, 68],
+        mask: ['62', 65, '69']
     },
     'C#m4': {
-        symbol: 'C#m',
+       symbol: 'C#m/D♭m',
         keys: [60 + 1, 60 + 1 + 3, 60 + 1 + 7], // [61, 64, 68]
     },
     'D4': {
@@ -527,11 +545,12 @@ const chordMap = {
         keys: [60 + 2, 60 + 2 + 3, 60 + 2 + 7], // [62, 65, 69]
     },
     'D#4': {
-        symbol: 'D#',
-        keys: [60 + 3, 60 + 3 + 4, 60 + 3 + 7], // [63, 67, 70]
+        symbol: 'D#/E♭',
+        keys: [60 + 3, 60 + 3 + 4, 60 + 3 + 7], // [63, 67, 70],
+        mask: ['64', 67, '71'],
     },
     'D#m4': {
-        symbol: 'D#m',
+         symbol: 'D#m/E♭m',
         keys: [60 + 3, 60 + 3 + 3, 60 + 3 + 7], // [63, 66, 70]
     },
     'E4': {
@@ -548,14 +567,15 @@ const chordMap = {
     },
     'FMinor4': {
         symbol: 'Fm',
-        keys: [60 + 5, 60 + 5 + 3, 60 + 5 + 7], // [65, 68, 72]
+        keys: [60 + 5, 60 + 5 + 3, 60 + 5 + 7], // [65, 68, 72],
+        mask: [65, '69', 72],
     },
     'F#4': {
-        symbol: 'F#',
+        symbol: 'F#/G♭',
         keys: [60 + 6, 60 + 6 + 4, 60 + 6 + 7], // [66, 70, 73]
     },
     'F#m4': {
-        symbol: 'F#m',
+        symbol: 'F#m/G♭m',
         keys: [60 + 6, 60 + 6 + 3, 60 + 6 + 7], // [66, 69, 73]
     },
     'G4': {
@@ -564,14 +584,16 @@ const chordMap = {
     },
     'GMinor4': {
         symbol: 'Gm',
-        keys: [60 + 7, 60 + 7 + 3, 60 + 7 + 7], // [67, 70, 74]
+        keys: [60 + 7, 60 + 7 + 3, 60 + 7 + 7], // [67, 70, 74],
+        mask: [67, '71', 74],
     },
     'G#4': {
-        symbol: 'G#',
-        keys: [60 + 8, 60 + 8 + 4, 60 + 8 + 7], // [68, 72, 75]
+        symbol: 'G#/A♭',
+        keys: [60 + 8, 60 + 8 + 4, 60 + 8 + 7], // [68, 72, 75],
+        mask: ['69', 72, '76'],
     },
     'G#m4': {
-        symbol: 'G#m',
+        symbol: 'G#m/A♭m',
         keys: [60 + 8, 60 + 8 + 3, 60 + 8 + 7], // [68, 71, 75]
     },
     'A4': {
@@ -583,11 +605,12 @@ const chordMap = {
         keys: [60 + 9, 60 + 9 + 3, 60 + 9 + 7], // [69, 72, 76]
     },
     'A#4': {
-        symbol: 'A#',
-        keys: [60 + 10, 60 + 10 + 4, 60 + 10 + 7], // [70, 74, 77]
+        symbol: 'A#/B♭',
+        keys: [60 + 10, 60 + 10 + 4, 60 + 10 + 7], // [70, 74, 77],
+        mask: ['71', 74, 77],
     },
     'A#m4': {
-        symbol: 'A#m',
+        symbol: 'A#m/B♭m',
         keys: [60 + 10, 60 + 10 + 3, 60 + 10 + 7], // [70, 73, 77]
     },
     'B4': {
@@ -606,14 +629,16 @@ const chordMap = {
     },
     'CMinor5': {
         symbol: 'Cm',
-        keys: [72, 72 + 3, 72 + 7], // [72, 75, 79]
+        keys: [72, 72 + 3, 72 + 7], // [72, 75, 79],
+        mask: [72, '76', 79]
     },
     'C#5': {
-        symbol: 'C#',
-        keys: [72 + 1, 72 + 1 + 4, 72 + 1 + 7], // [73, 77, 80]
+        symbol: 'C#/D♭',
+        keys: [72 + 1, 72 + 1 + 4, 72 + 1 + 7], // [73, 77, 80],
+        mask: ['74', 77, '81']
     },
     'C#m5': {
-        symbol: 'C#m',
+       symbol: 'C#m/D♭m',
         keys: [72 + 1, 72 + 1 + 3, 72 + 1 + 7], // [73, 76, 80]
     },
     'D5': {
@@ -625,11 +650,12 @@ const chordMap = {
         keys: [72 + 2, 72 + 2 + 3, 72 + 2 + 7], // [74, 77, 81]
     },
     'D#5': {
-        symbol: 'D#',
-        keys: [72 + 3, 72 + 3 + 4, 72 + 3 + 7], // [75, 79, 82]
+        symbol: 'D#/E♭',
+        keys: [72 + 3, 72 + 3 + 4, 72 + 3 + 7], // [75, 79, 82],
+        mask: ['76', 79, '83']
     },
     'D#m5': {
-        symbol: 'D#m',
+         symbol: 'D#m/E♭m',
         keys: [72 + 3, 72 + 3 + 3, 72 + 3 + 7], // [75, 78, 82]
     },
     'E5': {
@@ -646,7 +672,8 @@ const chordMap = {
     },
     'FMinor5': {
         symbol: 'Fm',
-        keys: [72 + 5, 72 + 5 + 3, 72 + 5 + 7], // [77, 80, 84]
+        keys: [72 + 5, 72 + 5 + 3, 72 + 5 + 7], // [77, 80, 84],
+        mask: [77, '81', 84],
     },
 };
 
@@ -658,7 +685,7 @@ export default function NoteBar() {
     const [showLeftHalf, setShowLeftHalf] = useState(true);
     const [showRightHalf, setShowRightHalf] = useState(true);
 
-    const [withChord, setWithChord] = useState(false);
+    const [withChord, setWithChord] = useState(true);
 
     const dafaultPool = useRef([])
     const poolKeys = useRef(defaultPoolKeys);
@@ -668,6 +695,7 @@ export default function NoteBar() {
     const pollChords = useRef(defaultChordMap);
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
+    //const selectedChord = useRef(chordMap["BMinor4"]);
 
 
     const [_, setTime] = useState();
@@ -854,9 +882,10 @@ export default function NoteBar() {
                 borderRadius: '10px'
             }}>{selectedChord.current.symbol}</span>}
             {
-                (withChord && selectedChord.current?.keys.map(keyNumber => {
+                (withChord && (selectedChord.current?.mask || selectedChord.current?.keys).map(keyNumber => {
+                    const isFlat = typeof keyNumber === 'string';
                     const { asset, y, bar, key: note, sharp } = map[keyNumber];
-                    return <Key key={keyNumber} bar={bar} note={note} asset={asset} y={y} showKey={showKey} sharp={sharp} i={0} />
+                    return <Key key={keyNumber} bar={bar} note={note} asset={asset} y={y} showKey={showKey} sharp={sharp && !isFlat} isFlat={isFlat} i={0} />
                 }))
             }
             {
@@ -919,7 +948,7 @@ export default function NoteBar() {
 function Key(props) {
     const width = 53;
     const ratio = 1.81;
-    const { asset, y, bar, note, showKey, sharp, i } = props;
+    const { asset, y, bar, note, showKey, sharp, isFlat, i } = props;
 
     const topBarMap = {
         'top': -1,
@@ -929,7 +958,7 @@ function Key(props) {
 
     return <div style={{ width: width, height: width / ratio, position: 'absolute', left: i % 2 ? 250 : 250, top: y, backgroundImage: `url(${asset})`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain' }}>
         {bar && <div style={{ position: 'absolute', width: width + 12, height: 4, left: -8, top: topBarMap[bar], backgroundColor: 'black' }} />}
-        {showKey && <span className='Key'>{note}</span>}
-        {sharp && <span style={{ position: 'absolute', fontSize: 30, fontWeight: 'bold', left: -20, top: -5 }}>#</span>}
+        {showKey && <span className='Key'>{note}{isFlat && '♭'}</span>}
+        {(sharp || isFlat) && <span style={{ position: 'absolute', fontSize: isFlat ? 45 : 30, fontWeight: 'bold', left: -20, top: isFlat ? -10 : -5 }}>{isFlat ? '♭' : '#'}</span>}
     </div>
 }
