@@ -611,7 +611,8 @@ const chordMap = {
     },
     'A#m4': {
         symbol: 'A#m/B♭m',
-        keys: [60 + 10, 60 + 10 + 3, 60 + 10 + 7], // [70, 73, 77]
+        keys: [60 + 10, 60 + 10 + 3, 60 + 10 + 7], // [70, 73, 77],
+        mask: ['71', '74', 77]
     },
     'B4': {
         symbol: 'B',
@@ -694,8 +695,8 @@ export default function NoteBar() {
     const defaultPollChords = useRef([]);
     const pollChords = useRef(defaultChordMap);
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
-    const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
-    //const selectedChord = useRef(chordMap["BMinor4"]);
+    //const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
+    const selectedChord = useRef(chordMap["A#m4"]);
 
 
     const [_, setTime] = useState();
