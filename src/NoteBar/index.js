@@ -688,6 +688,8 @@ export default function NoteBar() {
 
     const [withChord, setWithChord] = useState(true);
 
+    const [showChordLabel, setShowChordLabel] = useState(true);
+
     const dafaultPool = useRef([])
     const poolKeys = useRef(defaultPoolKeys);
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
@@ -846,6 +848,10 @@ export default function NoteBar() {
         setWithChord(prev => !prev)
     }, []);
 
+    const onShowChordLabelChange = useCallback(() => {
+        setShowChordLabel(prev => !prev);
+    }, []);    
+
     const onToggleChange = useCallback(() => {
         setShowKey(prev => !prev)
     }, []);
@@ -871,7 +877,7 @@ export default function NoteBar() {
             className="Note-Bar"
             onClick={onClick}
         >
-            {withChord && <span style={{
+            {withChord && showChordLabel && <span style={{
                 position: 'absolute',
                 top: 50,
                 right: -100,
@@ -917,6 +923,14 @@ export default function NoteBar() {
                 defaultChecked={withChord}
                 onChange={onWithChordChange} />
             <div htmlFor='with-chord'> Chord</div>
+        </div>
+
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='show-chord-label'
+                defaultChecked={showChordLabel}
+                onChange={onShowChordLabelChange} />
+            <div htmlFor='show-chord-label'>Show Chord label</div>
         </div>
 
         <div className='Toogle-wrapper'>
