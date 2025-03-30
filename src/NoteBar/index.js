@@ -679,8 +679,9 @@ const chordMap = {
 };
 
 const defaultChordMap = Object.keys(chordMap);
-const defaultMajorChordMap = Object.keys(chordMap).filter(chord => (!chord.includes('Minor') && !chord.includes('m')));
 const defaultPoolKeys = Object.keys(map);
+
+const nonMinorFilter = chord => (!chord.includes('Minor') && !chord.includes('m'));
 
 export default function NoteBar() {
 
@@ -698,7 +699,7 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(withMinor ? defaultChordMap : defaultMajorChordMap);
+    const pollChords = useRef(withMinor ? defaultChordMap : defaultChordMap.filter(nonMinorFilter));
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
@@ -710,13 +711,16 @@ export default function NoteBar() {
 
         if(withChord){
             let pool = [];
-            const defaultChord = withMinor ? defaultChordMap : defaultMajorChordMap;
             if (showLeftHalf && !showRightHalf) {
-                pool = defaultChord.slice(0, 48);
+                pool = defaultChordMap.slice(0, 48);
             } else if (showRightHalf && !showLeftHalf) {
-                pool = defaultChord.slice(48);
+                pool = defaultChordMap.slice(48);
             } else {
-                pool = [...defaultChord];
+                pool = [...defaultChordMap];
+            }
+
+            if(!withMinor){
+                pool = pool.filter(nonMinorFilter);
             }
     
             defaultPollChords.current = pool;
