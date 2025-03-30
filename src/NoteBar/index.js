@@ -679,12 +679,15 @@ const chordMap = {
 };
 
 const defaultChordMap = Object.keys(chordMap);
+const defaultMajorChordMap = Object.keys(chordMap).filter(chord => (!chord.includes('Minor') && !chord.includes('m')));
 const defaultPoolKeys = Object.keys(map);
 
 export default function NoteBar() {
 
     const [showLeftHalf, setShowLeftHalf] = useState(true);
     const [showRightHalf, setShowRightHalf] = useState(true);
+
+    const [withMinor, setWithMinor] = useState(false);
 
     const [withChord, setWithChord] = useState(true);
 
@@ -695,10 +698,10 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(defaultChordMap);
+    const pollChords = useRef(withMinor ? defaultChordMap : defaultMajorChordMap);
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
-    //const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
-    const selectedChord = useRef(chordMap["A#m4"]);
+    const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
+
 
 
     const [_, setTime] = useState();
@@ -707,12 +710,13 @@ export default function NoteBar() {
 
         if(withChord){
             let pool = [];
+            const defaultChord = withMinor ? defaultChordMap : defaultMajorChordMap;
             if (showLeftHalf && !showRightHalf) {
-                pool = defaultChordMap.slice(0, 48);
+                pool = defaultChord.slice(0, 48);
             } else if (showRightHalf && !showLeftHalf) {
-                pool = defaultChordMap.slice(48);
+                pool = defaultChord.slice(48);
             } else {
-                pool = [...defaultChordMap];
+                pool = [...defaultChord];
             }
     
             defaultPollChords.current = pool;
@@ -737,7 +741,7 @@ export default function NoteBar() {
 
         setTime(new Date())
 
-    }, [showLeftHalf, showRightHalf, withChord]);
+    }, [showLeftHalf, showRightHalf, withChord, withMinor]);
 
 
     const firstNote = MidiNumbers.fromNote('c2');
@@ -848,6 +852,10 @@ export default function NoteBar() {
         setWithChord(prev => !prev)
     }, []);
 
+    const onWithMinorChange = useCallback(() => {
+        setWithMinor(prev => !prev)
+    }, []);
+
     const onShowChordLabelChange = useCallback(() => {
         setShowChordLabel(prev => !prev);
     }, []);    
@@ -923,6 +931,14 @@ export default function NoteBar() {
                 defaultChecked={withChord}
                 onChange={onWithChordChange} />
             <div htmlFor='with-chord'> Chord</div>
+        </div>
+
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='with-minor'
+                defaultChecked={withMinor}
+                onChange={onWithMinorChange} />
+            <div htmlFor='with-minor'> Minor</div>
         </div>
 
         <div className='Toogle-wrapper'>
