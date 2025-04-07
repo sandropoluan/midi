@@ -9,18 +9,18 @@ import frullImage from './full.png';
 function arraysEqual(arr1, arr2) {
     // If lengths differ, arrays can't be equal.
     if (arr1.length !== arr2.length) return false;
-  
+
     // Create sorted copies of the arrays
     const sorted1 = arr1.slice().sort();
     const sorted2 = arr2.slice().sort();
-  
+
     // Compare each element
     for (let i = 0; i < sorted1.length; i++) {
-      if (sorted1[i] !== sorted2[i]) return false;
+        if (sorted1[i] !== sorted2[i]) return false;
     }
-  
+
     return true;
-  }
+}
 
 const map = {
     36: { // C2
@@ -427,7 +427,7 @@ let chordMap = {
         mask: ['50', 53, '57']
     },
     'C#m3': {
-       symbol: 'C#m/D♭m',
+        symbol: 'C#m/D♭m',
         keys: [48 + 1, 48 + 1 + 3, 48 + 1 + 7], // [49, 52, 56]
     },
     'D3': {
@@ -444,7 +444,7 @@ let chordMap = {
         mask: ['52', 55, '59']
     },
     'D#m3': {
-         symbol: 'D#m/E♭m',
+        symbol: 'D#m/E♭m',
         keys: [48 + 3, 48 + 3 + 3, 48 + 3 + 7], // [51, 54, 58]
     },
     'E3': {
@@ -533,7 +533,7 @@ let chordMap = {
         mask: ['62', 65, '69']
     },
     'C#m4': {
-       symbol: 'C#m/D♭m',
+        symbol: 'C#m/D♭m',
         keys: [60 + 1, 60 + 1 + 3, 60 + 1 + 7], // [61, 64, 68]
     },
     'D4': {
@@ -550,7 +550,7 @@ let chordMap = {
         mask: ['64', 67, '71'],
     },
     'D#m4': {
-         symbol: 'D#m/E♭m',
+        symbol: 'D#m/E♭m',
         keys: [60 + 3, 60 + 3 + 3, 60 + 3 + 7], // [63, 66, 70]
     },
     'E4': {
@@ -639,7 +639,7 @@ let chordMap = {
         mask: ['74', 77, '81']
     },
     'C#m5': {
-       symbol: 'C#m/D♭m',
+        symbol: 'C#m/D♭m',
         keys: [72 + 1, 72 + 1 + 3, 72 + 1 + 7], // [73, 76, 80]
     },
     'D5': {
@@ -656,7 +656,7 @@ let chordMap = {
         mask: ['76', 79, '83']
     },
     'D#m5': {
-         symbol: 'D#m/E♭m',
+        symbol: 'D#m/E♭m',
         keys: [72 + 3, 72 + 3 + 3, 72 + 3 + 7], // [75, 78, 82]
     },
     'E5': {
@@ -680,60 +680,77 @@ let chordMap = {
 
 const newChordMap = {};
 for (const chordKey of Object.keys(chordMap)) {
-    // Insert the original chord first
+    // Add the original chord first
     newChordMap[chordKey] = chordMap[chordKey];
-    
-    // Compute inverse 1 for triads: [second note, third note, root note (moved up an octave)]
-    const chord = chordMap[chordKey];
-    const inverseKeys = [chord.keys[1], chord.keys[2], chord.keys[0] + 12];
-    if(chord.keys[0] + 12 > 84){
-        continue
-    }
-    
-    const newChord = {
-        symbol: chord.symbol+ ' inv1',
-        keys: inverseKeys,
-    };
 
-    // If the chord has a mask, adjust it accordingly
-    if (chord.mask) {
-        const maskRoot = chord.mask[0];
-        const newMaskRoot = (typeof maskRoot === 'string')
-            ? String(Number(maskRoot) + 12)
-            : maskRoot + 12;
-        newChord.mask = [chord.mask[1], chord.mask[2], newMaskRoot];
+    const chord = chordMap[chordKey];
+
+    if (chord.keys[0] + 12 <= 84) {
+        // Calculate first inversion: [second, third, root+12]
+        const inverse1Keys = [chord.keys[1], chord.keys[2], chord.keys[0] + 12];
+        const inverse1 = {
+            symbol: chord.symbol + ' Inv1',
+            keys: inverse1Keys,
+        };
+        if (chord.mask) {
+            const maskRoot = chord.mask[0];
+            const newMaskRoot = (typeof maskRoot === 'string')
+                ? String(Number(maskRoot) + 12)
+                : maskRoot + 12;
+            inverse1.mask = [chord.mask[1], chord.mask[2], newMaskRoot];
+        }
+        newChordMap[chordKey + 'Inverse1'] = inverse1;
     }
-    
-    // Add the inverse chord right after the original chord
-    newChordMap[chordKey + 'Inverse1'] = newChord;
+
+    if (chord.keys[2] - 12 >= 36) {
+        // Second inversion: [c - 12, a, b]
+        // This takes the fifth and drops it an octave, then the root and third remain.
+        const inverse2Keys = [chord.keys[2] - 12, chord.keys[0], chord.keys[1]];
+        const inverse2 = {
+            symbol: chord.symbol + ' Inv2',
+            keys: inverse2Keys,
+        };
+        if (chord.mask) {
+            const maskA = chord.mask[0];
+            const maskB = chord.mask[1];
+            const maskC = chord.mask[2];
+            const newMaskC = (typeof maskC === 'string')
+                ? String(Number(maskC) - 12)
+                : maskC - 12;
+            inverse2.mask = [newMaskC, maskA, maskB];
+        }
+        newChordMap[chordKey + 'Inverse2'] = inverse2;
+    }
 }
 
-// Optionally, if you want to replace chordMap with newChordMap:
+// Optionally, replace the original chordMap with the new ordered chordMap
 chordMap = newChordMap;
 
 const defaultChordMap = Object.keys(chordMap);
 const defaultPoolKeys = Object.keys(map);
 
 
-const chordFilter = (withMinor, withInverse1, inverse1only) => {
-
+const chordFilter = ({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly }) => {
     return (item) => {
-        if(inverse1only){
-            if(withMinor) return item.includes('Inverse1');
-            if(!withMinor) return item.includes('Inverse1') && (!item.includes('Minor') && !item.includes('m'));
 
-        }
-        if(withMinor && withInverse1){
-            return item;
-        } else if(!withMinor && !withInverse1){
-            return (!item.includes('Minor') && !item.includes('m')) && (!item.includes('Inverse1'));
-        } else if(withMinor && !withInverse1){
-            return !item.includes('Inverse1');
-        }  else if(!withMinor && withInverse1){
-            return (!item.includes('Minor') && !item.includes('m'));
+        let show = true;
+        if (!withInverse1) {
+            show &= !item.includes('Inverse1')
         }
 
-        return item;
+        if (!withInverse2) {
+            show &= !item.includes('Inverse2')
+        }
+
+        if (inverse1Only || inverse2Only || inverseOnly) {
+            show &= item.includes('Inverse');
+        }
+
+        if (!withMinor) {
+            show &= !item.includes('Minor') && !item.includes('m');
+        }
+
+        return show;
     }
 }
 
@@ -748,7 +765,13 @@ export default function NoteBar() {
 
     const [withInverse1, setWithInverse1] = useState(true);
 
+    const [inverse2Only, setInverse2Only] = useState(false);
+
+    const [withInverse2, setWithInverse2] = useState(true);
+
     const [inverse1Only, setInverse1Only] = useState(false);
+
+    const [inverseOnly, setInverseOnly] = useState(false);
 
     const [showChordLabel, setShowChordLabel] = useState(true);
 
@@ -757,7 +780,7 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(defaultChordMap.filter(chordFilter(withChord, withInverse1, inverse1Only)));
+    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withChord, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly })));
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
@@ -767,20 +790,18 @@ export default function NoteBar() {
 
     useEffect(() => {
 
-        if(withChord){
+        if (withChord) {
             let pool = [];
             if (showLeftHalf && !showRightHalf) {
-                pool = defaultChordMap.slice(0, 96);
+                pool = defaultChordMap.slice(0, 134);
             } else if (showRightHalf && !showLeftHalf) {
-                pool = defaultChordMap.slice(96);
+                pool = defaultChordMap.slice(134);
             } else {
                 pool = [...defaultChordMap];
             }
 
+            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly }));
 
-            pool = pool.filter(chordFilter(withMinor, withInverse1, inverse1Only));
-
-    
             defaultPollChords.current = pool;
             pollChords.current = pool;
             selectedIdx.current = Math.floor(pollChords.current.length * Math.random());
@@ -794,7 +815,7 @@ export default function NoteBar() {
             } else {
                 pool = [...defaultPoolKeys];
             }
-    
+
             dafaultPool.current = pool;
             poolKeys.current = pool;
             selectedIdx.current = Math.floor(poolKeys.current.length * Math.random());
@@ -803,7 +824,7 @@ export default function NoteBar() {
 
         setTime(new Date())
 
-    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, inverse1Only]);
+    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly]);
 
 
     const firstNote = MidiNumbers.fromNote('c2');
@@ -875,10 +896,10 @@ export default function NoteBar() {
                             }
                         });
 
-                        if(arraysEqual(chord, selectedChord.current.keys)){
+                        if (arraysEqual(chord, selectedChord.current.keys)) {
                             nextChord();
                         }
-                        
+
                     }
 
                     // Note Off (0x80) or Note On with velocity 0 indicates key release.
@@ -920,7 +941,7 @@ export default function NoteBar() {
 
     const onShowChordLabelChange = useCallback(() => {
         setShowChordLabel(prev => !prev);
-    }, []);    
+    }, []);
 
     const onToggleChange = useCallback(() => {
         setShowKey(prev => !prev)
@@ -997,14 +1018,18 @@ export default function NoteBar() {
 
         <div className='Toogle-wrapper'>
             <Toggle
+                disabled={!withChord}
                 id='with-inverse1'
                 defaultChecked={withInverse1}
                 checked={withInverse1}
                 onChange={() => {
-                    if(withInverse1){
+                    if (withInverse1) {
                         setInverse1Only(false);
+                    } else {
+                        setInverse2Only(false);
                     }
                     setWithInverse1(state => !state);
+                    setInverseOnly(false);
                 }} />
             <div htmlFor='with-inverse1'> Inverse 1</div>
         </div>
@@ -1013,20 +1038,81 @@ export default function NoteBar() {
         <div className='Toogle-wrapper'>
             <Toggle
                 id='inverse1-only'
+                disabled={!withChord}
                 defaultChecked={inverse1Only}
                 checked={inverse1Only}
                 onChange={() => {
-                    if(!inverse1Only){
+                    if (!inverse1Only) {
                         setWithInverse1(true);
+                        setInverse2Only(false);
+                        setWithInverse2(false);
                     }
                     setInverse1Only(state => !state);
+                    setInverseOnly(false);
                 }} />
             <div htmlFor='with-inverse1'> Inverse 1 Only</div>
         </div>
 
         <div className='Toogle-wrapper'>
             <Toggle
+                id='with-inverse2'
+                disabled={!withChord}
+                defaultChecked={withInverse2}
+                checked={withInverse2}
+                onChange={() => {
+                    if (withInverse2) {
+                        setInverse2Only(false);
+                    } else {
+                        setInverse1Only(false);
+                    }
+                    setWithInverse2(state => !state);
+                    setInverseOnly(false);
+                }} />
+            <div htmlFor='with-inverse2'> Inverse 2</div>
+        </div>
+
+
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='inverse2-only'
+                disabled={!withChord}
+                defaultChecked={inverse2Only}
+                checked={inverse2Only}
+                onChange={() => {
+                    if (!inverse2Only) {
+                        setWithInverse2(true);
+                        setInverse1Only(false);
+                        setWithInverse1(false);
+                    }
+                    setInverse2Only(state => !state);
+                    setInverseOnly(false);
+                }} />
+            <div htmlFor='with-inverse2'> Inverse 2 Only</div>
+        </div>
+
+
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='inverse-only'
+                defaultChecked={inverseOnly}
+                disabled={!withChord}
+                checked={inverseOnly}
+                onChange={() => {
+                    if (!inverseOnly) {
+                        setWithInverse1(true);
+                        setWithInverse2(true);
+                        setInverse1Only(false);
+                        setInverse2Only(false);
+                    }
+                    setInverseOnly(state => !state);
+                }} />
+            <div htmlFor='with-inverse2'> Inverse 1 & 2 Only</div>
+        </div>
+
+        <div className='Toogle-wrapper'>
+            <Toggle
                 id='with-minor'
+                disabled={!withChord}
                 defaultChecked={withMinor}
                 onChange={onWithMinorChange} />
             <div htmlFor='with-minor'> Minor</div>
@@ -1035,6 +1121,7 @@ export default function NoteBar() {
         <div className='Toogle-wrapper'>
             <Toggle
                 id='show-chord-label'
+                disabled={!withChord}
                 defaultChecked={showChordLabel}
                 onChange={onShowChordLabelChange} />
             <div htmlFor='show-chord-label'>Show Chord label</div>
