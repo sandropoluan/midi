@@ -3,7 +3,7 @@ import Toggle from 'react-toggle';
 import 'react-toggle/style.css'
 import { Piano, KeyboardShortcuts, MidiNumbers } from 'react-piano';
 import 'react-piano/dist/styles.css';
-import './index.css'
+import './index.scss'
 import frullImage from './full.png';
 
 function arraysEqual(arr1, arr2) {
@@ -750,7 +750,7 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
             show &= !item.includes('Minor') && !item.includes('m');
         }
 
-        if(minorOnly){
+        if (minorOnly) {
             show &= item.includes('Minor') || item.includes('m')
         }
 
@@ -782,6 +782,8 @@ export default function NoteBar() {
     const [showChordLabel, setShowChordLabel] = useState(true);
 
     const [showVirtualPiano, setShowVirtualPiano] = useState(false);
+
+    const [midiConnected, setMidiConnected] = useState(false);
 
     const dafaultPool = useRef([])
     const poolKeys = useRef(defaultPoolKeys);
@@ -879,13 +881,33 @@ export default function NoteBar() {
 
     useEffect(() => {
         if (navigator.requestMIDIAccess) {
-
-            // Map to store active note events with their timestamps
             const activeNotes = new Map();
-            // Define a time window in milliseconds to group notes as a chord
+
             const chordWindow = 50;
 
-            const handleInput = (input) => {
+            let disconnectedTimeout;
+            let requestMIDI;
+            let inputs;
+            let handleInput;
+
+            const cleanUp = () => {
+                clearTimeout(disconnectedTimeout);
+                (inputs || []).forEach(input => {
+                    input.removeEventListener('midimessage', handleInput);
+                });
+            }
+
+            handleInput = (input) => {
+                if (input) {
+                    clearTimeout(disconnectedTimeout);
+                    setMidiConnected(true);
+                    disconnectedTimeout = setTimeout(() => {
+                        cleanUp();
+                        if (typeof requestMIDI == 'function') {
+                            requestMIDI();
+                        }
+                    }, 3000);
+                }
                 if (withChord) {
 
                     const [status, note, velocity] = input.data;
@@ -933,10 +955,21 @@ export default function NoteBar() {
                 })
             }
 
-            const onError = (err) => {
-                console.error('Error MIDI', err)
+            requestMIDI = function () {
+                navigator.requestMIDIAccess().then(onSuccess, (err) => {
+                    setTimeout(() => {
+                        console.error('Error MIDI', err);
+                        requestMIDI();
+                    }, 2000);
+                });
             }
-            navigator.requestMIDIAccess().then(onSuccess, onError);
+
+            requestMIDI();
+
+            return () => {
+                cleanUp();
+            }
+
         }
     }, [withChord]);
 
@@ -945,7 +978,7 @@ export default function NoteBar() {
     }, []);
 
     const onWithMinorChange = useCallback(() => {
-        if(withMinor){
+        if (withMinor) {
             setMinorOnly(false);
         }
         setWithMinor(prev => !prev)
@@ -980,6 +1013,9 @@ export default function NoteBar() {
     }, [withChord]);
 
     return <div className='Note-bar-container'>
+        <div id="connection" className={midiConnected && 'connected'}>
+            Midi {midiConnected ? 'connected' : 'not connected'}
+        </div>
         <div
             className="Note-Bar"
             onClick={onClick}
@@ -1135,7 +1171,7 @@ export default function NoteBar() {
                 disabled={!withChord}
                 checked={minorOnly}
                 onChange={() => {
-                    if(!minorOnly){
+                    if (!minorOnly) {
                         setWithMinor(true);
                     }
                     setMinorOnly(state => !state);

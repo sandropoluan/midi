@@ -32,7 +32,7 @@ body {
 }
 
 H1 {
-  z-index: 999;
+  z-index: 9;
   position: absolute;
   left: 700px;
   font-style: italic;
