@@ -1,5 +1,8 @@
 body {
   background-color: white;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
 }
 
 .App {
@@ -26,6 +29,14 @@ body {
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+H1 {
+  z-index: 999;
+  position: absolute;
+  left: 700px;
+  font-style: italic;
+  text-decoration: underline;
 }
 
 .App-link {

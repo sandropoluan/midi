@@ -1027,7 +1027,7 @@ export default function NoteBar() {
         <div className='Toogle-wrapper'>
             <Toggle
                 id='with-chord'
-                defaultChecked={withChord}
+                checked={withChord}
                 onChange={onWithChordChange} />
             <div htmlFor='with-chord'> Chord</div>
         </div>
@@ -1036,7 +1036,6 @@ export default function NoteBar() {
             <Toggle
                 disabled={!withChord}
                 id='with-inverse1'
-                defaultChecked={withInverse1}
                 checked={withInverse1}
                 onChange={() => {
                     if (withInverse1) {
@@ -1055,7 +1054,6 @@ export default function NoteBar() {
             <Toggle
                 id='inverse1-only'
                 disabled={!withChord}
-                defaultChecked={inverse1Only}
                 checked={inverse1Only}
                 onChange={() => {
                     if (!inverse1Only) {
@@ -1073,7 +1071,6 @@ export default function NoteBar() {
             <Toggle
                 id='with-inverse2'
                 disabled={!withChord}
-                defaultChecked={withInverse2}
                 checked={withInverse2}
                 onChange={() => {
                     if (withInverse2) {
@@ -1092,7 +1089,6 @@ export default function NoteBar() {
             <Toggle
                 id='inverse2-only'
                 disabled={!withChord}
-                defaultChecked={inverse2Only}
                 checked={inverse2Only}
                 onChange={() => {
                     if (!inverse2Only) {
@@ -1110,7 +1106,6 @@ export default function NoteBar() {
         <div className='Toogle-wrapper'>
             <Toggle
                 id='inverse-only'
-                defaultChecked={inverseOnly}
                 disabled={!withChord}
                 checked={inverseOnly}
                 onChange={() => {
@@ -1129,7 +1124,6 @@ export default function NoteBar() {
             <Toggle
                 id='with-minor'
                 disabled={!withChord}
-                defaultChecked={withMinor}
                 checked={withMinor}
                 onChange={onWithMinorChange} />
             <div htmlFor='with-minor'>Minor</div>
@@ -1139,7 +1133,6 @@ export default function NoteBar() {
             <Toggle
                 id='minor-only'
                 disabled={!withChord}
-                defaultChecked={minorOnly}
                 checked={minorOnly}
                 onChange={() => {
                     if(!minorOnly){
@@ -1154,7 +1147,7 @@ export default function NoteBar() {
             <Toggle
                 id='show-chord-label'
                 disabled={!withChord}
-                defaultChecked={showChordLabel}
+                checked={showChordLabel}
                 onChange={onShowChordLabelChange} />
             <div htmlFor='show-chord-label'>Show Chord label</div>
         </div>
@@ -1162,7 +1155,6 @@ export default function NoteBar() {
         <div className='Toogle-wrapper'>
             <Toggle
                 id='cheese-status'
-                defaultChecked={showKey}
                 checked={showKey}
                 onChange={onToggleChange} />
             <div htmlFor='cheese-status'> Show Key</div>
@@ -1171,7 +1163,7 @@ export default function NoteBar() {
         <div className='Toogle-wrapper'>
             <Toggle
                 id='left-half'
-                defaultChecked={showLeftHalf}
+                checked={showLeftHalf}
                 onChange={onToggleLeftChange} />
             <div htmlFor='left-half'> Left Half</div>
         </div>
@@ -1179,14 +1171,13 @@ export default function NoteBar() {
         <div className='Toogle-wrapper'>
             <Toggle
                 id='right-half'
-                defaultChecked={showRightHalf}
+                checked={showRightHalf}
                 onChange={onToggleRightChange} />
             <div htmlFor='right-half'> Right Half</div>
         </div>
         <div className='Toogle-wrapper'>
             <Toggle
                 id='virtual-piano'
-                defaultChecked={showVirtualPiano}
                 checked={showVirtualPiano}
                 onChange={onToggleVirtualPianoChange} />
             <div htmlFor='right-half'>Show Virtual Piano</div>
