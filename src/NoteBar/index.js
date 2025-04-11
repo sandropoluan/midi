@@ -730,7 +730,7 @@ const defaultChordMap = Object.keys(chordMap);
 const defaultPoolKeys = Object.keys(map);
 
 
-const chordFilter = ({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly }) => {
+const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly }) => {
     return (item) => {
 
         let show = true;
@@ -750,6 +750,10 @@ const chordFilter = ({ withMinor, withInverse1, withInverse2, inverse1Only, inve
             show &= !item.includes('Minor') && !item.includes('m');
         }
 
+        if(minorOnly){
+            show &= item.includes('Minor') || item.includes('m')
+        }
+
         return show;
     }
 }
@@ -760,6 +764,8 @@ export default function NoteBar() {
     const [showRightHalf, setShowRightHalf] = useState(true);
 
     const [withMinor, setWithMinor] = useState(true);
+
+    const [minorOnly, setMinorOnly] = useState(false);
 
     const [withChord, setWithChord] = useState(true);
 
@@ -782,7 +788,7 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withChord, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly })));
+    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly })));
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
@@ -802,7 +808,7 @@ export default function NoteBar() {
                 pool = [...defaultChordMap];
             }
 
-            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly }));
+            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly }));
 
             defaultPollChords.current = pool;
             pollChords.current = pool;
@@ -827,7 +833,7 @@ export default function NoteBar() {
 
         setTime(new Date())
 
-    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly]);
+    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly]);
 
 
     const firstNote = MidiNumbers.fromNote('c2');
@@ -939,8 +945,11 @@ export default function NoteBar() {
     }, []);
 
     const onWithMinorChange = useCallback(() => {
+        if(withMinor){
+            setMinorOnly(false);
+        }
         setWithMinor(prev => !prev)
-    }, []);
+    }, [withMinor]);
 
     const onShowChordLabelChange = useCallback(() => {
         setShowChordLabel(prev => !prev);
@@ -1121,8 +1130,24 @@ export default function NoteBar() {
                 id='with-minor'
                 disabled={!withChord}
                 defaultChecked={withMinor}
+                checked={withMinor}
                 onChange={onWithMinorChange} />
-            <div htmlFor='with-minor'> Minor</div>
+            <div htmlFor='with-minor'>Minor</div>
+        </div>
+
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='minor-only'
+                disabled={!withChord}
+                defaultChecked={minorOnly}
+                checked={minorOnly}
+                onChange={() => {
+                    if(!minorOnly){
+                        setWithMinor(true);
+                    }
+                    setMinorOnly(state => !state);
+                }} />
+            <div htmlFor='with-minor'> Minor Only</div>
         </div>
 
         <div className='Toogle-wrapper'>
