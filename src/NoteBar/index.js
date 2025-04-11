@@ -784,6 +784,7 @@ export default function NoteBar() {
     const [showVirtualPiano, setShowVirtualPiano] = useState(false);
 
     const [midiConnected, setMidiConnected] = useState(false);
+    const midiConnectedRef = useRef(midiConnected);
 
     const dafaultPool = useRef([])
     const poolKeys = useRef(defaultPoolKeys);
@@ -886,12 +887,14 @@ export default function NoteBar() {
             const chordWindow = 50;
 
             let disconnectedTimeout;
+            let retryTimeout;
             let requestMIDI;
             let inputs;
             let handleInput;
 
             const cleanUp = () => {
                 clearTimeout(disconnectedTimeout);
+                clearTimeout(retryTimeout);
                 (inputs || []).forEach(input => {
                     input.removeEventListener('midimessage', handleInput);
                 });
@@ -901,7 +904,11 @@ export default function NoteBar() {
                 if (input) {
                     clearTimeout(disconnectedTimeout);
                     setMidiConnected(true);
+                    midiConnectedRef.current = true;
                     disconnectedTimeout = setTimeout(() => {
+                    console.error('Midi Disconnected')
+                        setMidiConnected(false);
+                        midiConnectedRef.current = false;
                         cleanUp();
                         if (typeof requestMIDI == 'function') {
                             requestMIDI();
@@ -948,8 +955,21 @@ export default function NoteBar() {
                 }
             }
 
+
+            const retry = () => {
+                console.info('Retrying midi connection');
+                if(midiConnectedRef.current) return;
+                retryTimeout = setTimeout(() => {
+                    requestMIDI();
+                }, 2000);
+            }
+
+
             const onSuccess = (midiAccess) => {
                 const inputs = midiAccess.inputs;
+                if (!inputs?.length && !midiConnectedRef.current) {
+                    retry();
+                }
                 inputs.forEach(input => {
                     input.addEventListener('midimessage', handleInput);
                 })
@@ -957,10 +977,11 @@ export default function NoteBar() {
 
             requestMIDI = function () {
                 navigator.requestMIDIAccess().then(onSuccess, (err) => {
-                    setTimeout(() => {
-                        console.error('Error MIDI', err);
-                        requestMIDI();
-                    }, 2000);
+                    console.error('Error MIDI', err);
+                    retry()
+                }).catch(error => {
+                    console.error('Error MIDI 2', error);
+                    retry();
                 });
             }
 
@@ -1013,7 +1034,7 @@ export default function NoteBar() {
     }, [withChord]);
 
     return <div className='Note-bar-container'>
-        <div id="connection" className={midiConnected && 'connected'}>
+        <div id="connection" className={midiConnected ? 'connected' : undefined}>
             Midi {midiConnected ? 'connected' : 'not connected'}
         </div>
         <div
