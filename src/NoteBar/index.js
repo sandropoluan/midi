@@ -775,6 +775,8 @@ export default function NoteBar() {
 
     const [showChordLabel, setShowChordLabel] = useState(true);
 
+    const [showVirtualPiano, setShowVirtualPiano] = useState(false);
+
     const dafaultPool = useRef([])
     const poolKeys = useRef(defaultPoolKeys);
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
@@ -804,8 +806,9 @@ export default function NoteBar() {
 
             defaultPollChords.current = pool;
             pollChords.current = pool;
-            selectedIdx.current = Math.floor(pollChords.current.length * Math.random());
-
+            selectedChordIdx.current = Math.floor(pollChords.current.length * Math.random());
+            const chord = pollChords.current[selectedChordIdx.current];
+            selectedChord.current = chordMap[chord];
         } else {
             let pool = [];
             if (showLeftHalf && !showRightHalf) {
@@ -955,6 +958,10 @@ export default function NoteBar() {
         setShowRightHalf(prev => !prev)
     }, []);
 
+    const onToggleVirtualPianoChange = useCallback(() => {
+        setShowVirtualPiano(prev => !prev);
+    }, []);
+
     const onClick = useCallback(() => {
         if (withChord) {
             nextChord()
@@ -994,7 +1001,7 @@ export default function NoteBar() {
                 }))
             }
         </div>
-        <div className='Piano-wrapper'>
+        {showVirtualPiano && <div className='Piano-wrapper'>
             <Piano
                 noteRange={{ first: firstNote, last: lastNote }}
                 playNote={(midiNumber) => {
@@ -1006,7 +1013,7 @@ export default function NoteBar() {
                 width={1000}
                 keyboardShortcuts={keyboardShortcuts}
             />
-        </div>
+        </div>}
 
         <div className='Toogle-wrapper'>
             <Toggle
@@ -1131,6 +1138,7 @@ export default function NoteBar() {
             <Toggle
                 id='cheese-status'
                 defaultChecked={showKey}
+                checked={showKey}
                 onChange={onToggleChange} />
             <div htmlFor='cheese-status'> Show Key</div>
         </div>
@@ -1149,6 +1157,14 @@ export default function NoteBar() {
                 defaultChecked={showRightHalf}
                 onChange={onToggleRightChange} />
             <div htmlFor='right-half'> Right Half</div>
+        </div>
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='virtual-piano'
+                defaultChecked={showVirtualPiano}
+                checked={showVirtualPiano}
+                onChange={onToggleVirtualPianoChange} />
+            <div htmlFor='right-half'>Show Virtual Piano</div>
         </div>
 
     </div>
