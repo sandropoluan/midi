@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css'
 import { Piano, KeyboardShortcuts, MidiNumbers } from 'react-piano';
@@ -910,7 +910,8 @@ export default function NoteBar() {
 
     const [showChordLabel, setShowChordLabel] = useState(true);
 
-    const [showVirtualPiano, setShowVirtualPiano] = useState(false);
+    const [showVirtualPiano, setShowVirtualPiano] = useState(true);
+    const [virtualPianoHighlight, setVirtualPianoHighlight] = useState(false);
 
     const [midiConnected, setMidiConnected] = useState(false);
     const midiConnectedRef = useRef(midiConnected);
@@ -926,7 +927,7 @@ export default function NoteBar() {
 
     const cardLeft = poolKeys.current.length || pollChords.current.length;
 
-    const [_, setTime] = useState();
+    const [time, setTime] = useState();
 
     useEffect(() => {
         poolKeys.current = [];
@@ -969,6 +970,14 @@ export default function NoteBar() {
 
     }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly]);
 
+
+    const highlightedKeys = useMemo(() => {
+        if (!virtualPianoHighlight) return [];
+        if (withChord) return (selectedChord.current?.keys || []).map(item => +(`${item}`.split("-")[0]));
+
+        return [+(`${poolKeys.current[selectedIdx.current]}`.split("-")[0])];
+
+    }, [time, withChord, virtualPianoHighlight]);
 
     const firstNote = MidiNumbers.fromNote('c2');
     const lastNote = MidiNumbers.fromNote('c6');
@@ -1156,6 +1165,10 @@ export default function NoteBar() {
         setShowVirtualPiano(prev => !prev);
     }, []);
 
+    const onToggleVirtualPianoHighlightChange = useCallback(() => {
+        setVirtualPianoHighlight(prev => !prev);
+    }, []);
+
     const onClick = useCallback(() => {
         if (withChord) {
             nextChord()
@@ -1202,6 +1215,7 @@ export default function NoteBar() {
         {showVirtualPiano && <div className='Piano-wrapper'>
             <Piano
                 noteRange={{ first: firstNote, last: lastNote }}
+                highlightedKeys={highlightedKeys}
                 playNote={(midiNumber) => {
                     if (withChord) return;
                     if (midiNumber === +(poolKeys.current[selectedIdx.current].split("-")[0])) {
@@ -1371,6 +1385,14 @@ export default function NoteBar() {
                 checked={showVirtualPiano}
                 onChange={onToggleVirtualPianoChange} />
             <div htmlFor='right-half'>Show Virtual Piano</div>
+        </div>
+        <div className='Toogle-wrapper'>
+            <Toggle
+                id='virtual-piano-highlight'
+                checked={virtualPianoHighlight}
+                disabled={!showVirtualPiano}
+                onChange={onToggleVirtualPianoHighlightChange} />
+            <div htmlFor='right-half'>Highlight Key</div>
         </div>
 
     </div>
