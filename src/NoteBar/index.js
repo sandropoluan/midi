@@ -29,12 +29,19 @@ const map = {
         y: 471,
         bar: 'middle'
     },
-    37: { // C#2
+    "37-sharp": { // C#2
         key: 'C#',
         sharp: true,
         asset: frullImage,
         y: 471,
         bar: 'middle'
+    },
+    "37-flat": { // D♭2
+        key: 'D♭',
+        flat: true,
+        asset: frullImage,
+        y: 456, // using D2's y and bar
+        bar: 'bottom'
     },
     38: { // D2
         key: 'D',
@@ -42,12 +49,19 @@ const map = {
         y: 456,
         bar: 'bottom'
     },
-    39: { // D#2
+    "39-sharp": { // D#2
         key: 'D#',
         sharp: true,
         asset: frullImage,
         y: 456,
         bar: 'bottom'
+    },
+    "39-flat": { // E♭2
+        key: 'E♭',
+        flat: true,
+        asset: frullImage,
+        y: 440, // using E2's y and bar
+        bar: 'middle'
     },
     40: { // E2
         key: 'E',
@@ -61,104 +75,152 @@ const map = {
         y: 425,
         bar: 'bottom'
     },
-    42: { // F#2
+    "42-sharp": { // F#2
         key: 'F#',
         sharp: true,
         asset: frullImage,
         y: 425,
         bar: 'bottom'
     },
+    "42-flat": { // G♭2
+        key: 'G♭',
+        flat: true,
+        asset: frullImage,
+        y: 409, // using G2's y (and note 43 has no bar so it’s omitted)
+    },
     43: { // G2
         key: 'G',
         asset: frullImage,
-        y: 409,
+        y: 409
     },
-    44: { // G#2
+    "44-sharp": { // G#2
         key: 'G#',
         sharp: true,
         asset: frullImage,
-        y: 409,
+        y: 409
+    },
+    "44-flat": { // A♭2
+        key: 'A♭',
+        flat: true,
+        asset: frullImage,
+        y: 394, // using A2's y
     },
     45: { // A2
         key: 'A',
         asset: frullImage,
-        y: 394,
+        y: 394
     },
-    46: { // A#2
-        key: 'A',
+    "46-sharp": { // A#2
+        key: 'A#',
         sharp: true,
         asset: frullImage,
-        y: 394,
+        y: 394
+    },
+    "46-flat": { // B♭2
+        key: 'B♭',
+        flat: true,
+        asset: frullImage,
+        y: 378, // using B2's y
     },
     47: { // B2
         key: 'B',
         asset: frullImage,
-        y: 378,
+        y: 378
     },
     48: { // C3
         key: 'C',
         asset: frullImage,
-        y: 362,
+        y: 362
     },
-    49: { // C#3
+    "49-sharp": { // C#3
         key: 'C#',
         sharp: true,
         asset: frullImage,
-        y: 362,
+        y: 362
+    },
+    "49-flat": { // D♭3
+        key: 'D♭',
+        flat: true,
+        asset: frullImage,
+        y: 347, // using D3's y
     },
     50: { // D3
         key: 'D',
         asset: frullImage,
-        y: 347,
+        y: 347
     },
-    51: { // D#3
+    "51-sharp": { // D#3
         key: 'D#',
         sharp: true,
         asset: frullImage,
-        y: 347,
+        y: 347
+    },
+    "51-flat": { // E♭3
+        key: 'E♭',
+        flat: true,
+        asset: frullImage,
+        y: 330, // using E3's y
     },
     52: { // E3
         key: 'E',
         asset: frullImage,
-        y: 330,
+        y: 330
     },
     53: { // F3
         key: 'F',
         asset: frullImage,
-        y: 315,
+        y: 315
     },
-    54: { // F#3
+    "54-sharp": { // F#3
         key: 'F#',
         sharp: true,
         asset: frullImage,
-        y: 315,
+        y: 315
+    },
+    "54-flat": { // G♭3
+        key: 'G♭',
+        flat: true,
+        asset: frullImage,
+        y: 300, // using G3's y
     },
     55: { // G3
         key: 'G',
         asset: frullImage,
-        y: 300,
+        y: 300
     },
-    56: { // G#3
+    "56-sharp": { // G#3
         key: 'G#',
         sharp: true,
         asset: frullImage,
-        y: 300,
+        y: 300
+    },
+    "56-flat": { // A♭3
+        key: 'A♭',
+        flat: true,
+        asset: frullImage,
+        y: 284, // using A3's y
     },
     57: { // A3
         key: 'A',
         asset: frullImage,
-        y: 284,
+        y: 284
     },
-    58: { // A#3
+    "58-sharp": { // A#3
         key: 'A#',
         sharp: true,
         asset: frullImage,
-        y: 284,
+        y: 284
+    },
+    "58-flat": { // B♭3
+        key: 'B♭',
+        flat: true,
+        asset: frullImage,
+        y: 268, // using B3's y
     },
     59: { // B3
         key: 'B',
         asset: frullImage,
-        y: 268,
+        y: 268
     },
     60: { // C4 (Middle C)
         key: 'C',
@@ -166,104 +228,153 @@ const map = {
         y: 198,
         bar: 'middle'
     },
-    61: { // C#4
+    "61-sharp": { // C#4
         key: 'C#',
         sharp: true,
         asset: frullImage,
         y: 198,
         bar: 'middle'
     },
+    "61-flat": { // D♭4
+        key: 'D♭',
+        flat: true,
+        asset: frullImage,
+        y: 179, // using D4's y
+    },
     62: { // D4
         key: 'D',
         asset: frullImage,
-        y: 179,
+        y: 179
     },
-    63: { // D#4
+    "63-sharp": { // D#4
         key: 'D#',
         sharp: true,
         asset: frullImage,
-        y: 179,
+        y: 179
+    },
+    "63-flat": { // E♭4
+        key: 'E♭',
+        flat: true,
+        asset: frullImage,
+        y: 165, // using E4's y
     },
     64: { // E4
         key: 'E',
         asset: frullImage,
-        y: 165,
+        y: 165
     },
     65: { // F4
         key: 'F',
         asset: frullImage,
-        y: 148,
+        y: 148
     },
-    66: { // F#4
+    "66-sharp": { // F#4
         key: 'F#',
         sharp: true,
         asset: frullImage,
-        y: 148,
+        y: 148
+    },
+    "66-flat": { // G♭4
+        key: 'G♭',
+        flat: true,
+        asset: frullImage,
+        y: 132, // using G4's y
     },
     67: { // G4
         key: 'G',
         asset: frullImage,
-        y: 132,
+        y: 132
     },
-    68: { // G#4
+    "68-sharp": { // G#4
         key: 'G#',
         sharp: true,
         asset: frullImage,
-        y: 132,
+        y: 132
+    },
+    "68-flat": { // A♭4
+        key: 'A♭',
+        flat: true,
+        asset: frullImage,
+        y: 116, // using A4's y
     },
     69: { // A4
         key: 'A',
         asset: frullImage,
-        y: 116,
+        y: 116
     },
-    70: { // A#4
+    "70-sharp": { // A#4
         key: 'A#',
         sharp: true,
         asset: frullImage,
-        y: 116,
+        y: 116
+    },
+    "70-flat": { // B♭4
+        key: 'B♭',
+        flat: true,
+        asset: frullImage,
+        y: 100, // using B4's y
     },
     71: { // B4
         key: 'B',
         asset: frullImage,
-        y: 100,
+        y: 100
     },
     72: { // C5
         key: 'C',
         asset: frullImage,
-        y: 85,
+        y: 85
     },
-    73: { // C#5
+    "73-sharp": { // C#5
         key: 'C#',
         sharp: true,
         asset: frullImage,
-        y: 85,
+        y: 85
+    },
+    "73-flat": { // D♭5
+        key: 'D♭',
+        flat: true,
+        asset: frullImage,
+        y: 69, // using D5's y
     },
     74: { // D5
         key: 'D',
         asset: frullImage,
-        y: 69,
+        y: 69
     },
-    75: { // D#5
+    "75-sharp": { // D#5
         key: 'D#',
         sharp: true,
         asset: frullImage,
-        y: 69,
+        y: 69
+    },
+    "75-flat": { // E♭5
+        key: 'E♭',
+        flat: true,
+        asset: frullImage,
+        y: 55,  // using E5's y
     },
     76: { // E5
         key: 'E',
         asset: frullImage,
-        y: 55,
+        y: 55
     },
     77: { // F5
         key: 'F',
         asset: frullImage,
-        y: 39,
+        y: 39
     },
-    78: { // F#5
+    "78-sharp": { // F#5
         key: 'F#',
         sharp: true,
         asset: frullImage,
-        y: 39,
+        y: 39
+    },
+    "78-flat": { // G♭5
+        key: 'G♭',
+        flat: true,
+        asset: frullImage,
+        y: 23, // using G5's y
+        bar: 'top'
     },
     79: { // G5
         key: 'G',
@@ -271,12 +382,19 @@ const map = {
         y: 23,
         bar: 'top'
     },
-    80: { // G#5
+    "80-sharp": { // G#5
         key: 'G#',
         sharp: true,
         asset: frullImage,
         y: 23,
         bar: 'top'
+    },
+    "80-flat": { // A♭5
+        key: 'A♭',
+        flat: true,
+        asset: frullImage,
+        y: 8, // using A5's y
+        bar: 'middle'
     },
     81: { // A5
         key: 'A',
@@ -284,12 +402,19 @@ const map = {
         y: 8,
         bar: 'middle'
     },
-    82: { // A#5
+    "82-sharp": { // A#5
         key: 'A#',
         sharp: true,
         asset: frullImage,
         y: 8,
         bar: 'middle'
+    },
+    "82-flat": { // B♭5
+        key: 'B♭',
+        flat: true,
+        asset: frullImage,
+        y: -8, // using B5's y
+        bar: 'top'
     },
     83: { // B5
         key: 'B',
@@ -303,7 +428,8 @@ const map = {
         y: -23,
         bar: 'middle'
     }
-}
+};
+
 let chordMap = {
     // Octave 2 (base = 12*(2+1)=36)
     'C2': {
@@ -727,8 +853,11 @@ for (const chordKey of Object.keys(chordMap)) {
 chordMap = newChordMap;
 
 const defaultChordMap = Object.keys(chordMap);
-const defaultPoolKeys = Object.keys(map);
-
+const defaultPoolKeys = Object.keys(map).sort((a, b) => {
+    const A = +(a.split('-')[0]);
+    const B = +(b.split('-')[0]);
+    return A - B;
+});
 
 const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly }) => {
     return (item) => {
@@ -795,11 +924,13 @@ export default function NoteBar() {
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
-
+    const cardLeft = poolKeys.current.length || pollChords.current.length;
 
     const [_, setTime] = useState();
 
     useEffect(() => {
+        poolKeys.current = [];
+        pollChords.current = [];
 
         if (withChord) {
             let pool = [];
@@ -821,9 +952,9 @@ export default function NoteBar() {
         } else {
             let pool = [];
             if (showLeftHalf && !showRightHalf) {
-                pool = defaultPoolKeys.slice(0, 14);
+                pool = defaultPoolKeys.slice(0, 34);
             } else if (showRightHalf && !showLeftHalf) {
-                pool = defaultPoolKeys.slice(14);
+                pool = defaultPoolKeys.slice(34);
             } else {
                 pool = [...defaultPoolKeys];
             }
@@ -906,7 +1037,7 @@ export default function NoteBar() {
                     setMidiConnected(true);
                     midiConnectedRef.current = true;
                     disconnectedTimeout = setTimeout(() => {
-                    console.error('Midi Disconnected')
+                        console.error('Midi Disconnected')
                         setMidiConnected(false);
                         midiConnectedRef.current = false;
                         cleanUp();
@@ -948,7 +1079,7 @@ export default function NoteBar() {
                 } else {
                     const [command, note, velocity] = input.data;
                     if (command === 144 & velocity > 0) {
-                        if (note === +poolKeys.current[selectedIdx.current]) {
+                        if (note === +(poolKeys.current[selectedIdx.current]).split("-")[0]) {
                             next();
                         }
                     }
@@ -958,7 +1089,7 @@ export default function NoteBar() {
 
             const retry = () => {
                 console.info('Retrying midi connection');
-                if(midiConnectedRef.current) return;
+                if (midiConnectedRef.current) return;
                 retryTimeout = setTimeout(() => {
                     requestMIDI();
                 }, 2000);
@@ -1037,6 +1168,7 @@ export default function NoteBar() {
         <div id="connection" className={midiConnected ? 'connected' : undefined}>
             Midi {midiConnected ? 'connected' : 'not connected'}
         </div>
+        <div id="remaining">Remaining: {cardLeft}</div>
         <div
             className="Note-Bar"
             onClick={onClick}
@@ -1055,15 +1187,15 @@ export default function NoteBar() {
             {
                 (withChord && (selectedChord.current?.mask || selectedChord.current?.keys).map(keyNumber => {
                     const isFlat = typeof keyNumber === 'string';
-                    const { asset, y, bar, key: note, sharp } = map[keyNumber];
+                    const { asset, y, bar, key: note, sharp } = map[keyNumber] || map[`${keyNumber}-sharp`];
                     return <Key key={keyNumber} bar={bar} note={note} asset={asset} y={y} showKey={showKey} sharp={sharp && !isFlat} isFlat={isFlat} i={0} />
                 }))
             }
             {
                 (!withChord && poolKeys.current.map((key, i) => {
                     if (i !== selectedIdx.current) return null;
-                    const { asset, y, bar, key: note, sharp } = map[key];
-                    return <Key kay={key} bar={bar} note={note} asset={asset} y={y} showKey={showKey} sharp={sharp} i={i} />
+                    const { asset, y, bar, key: note, sharp, flat } = map[key];
+                    return <Key kay={key} bar={bar} note={note} asset={asset} y={y} showKey={showKey} isFlat={flat} sharp={sharp} i={i} />
                 }))
             }
         </div>
@@ -1071,7 +1203,7 @@ export default function NoteBar() {
             <Piano
                 noteRange={{ first: firstNote, last: lastNote }}
                 playNote={(midiNumber) => {
-                    if (midiNumber === +poolKeys.current[selectedIdx.current]) {
+                    if (midiNumber === +(poolKeys.current[selectedIdx.current].split("-")[0])) {
                         next();
                     }
                 }}
