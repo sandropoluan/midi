@@ -1203,6 +1203,7 @@ export default function NoteBar() {
             <Piano
                 noteRange={{ first: firstNote, last: lastNote }}
                 playNote={(midiNumber) => {
+                    if (withChord) return;
                     if (midiNumber === +(poolKeys.current[selectedIdx.current].split("-")[0])) {
                         next();
                     }
