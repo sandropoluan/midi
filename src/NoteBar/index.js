@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Toggle from 'react-toggle';
+import classNames from 'classnames';
 import 'react-toggle/style.css'
 import { Piano, KeyboardShortcuts, MidiNumbers } from 'react-piano';
 import 'react-piano/dist/styles.css';
@@ -912,6 +913,8 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
 
 export default function NoteBar() {
 
+    const [showControl, setShowControl] = useState(true);
+
     const [showLeftHalf, setShowLeftHalf] = useState(true);
     const [showRightHalf, setShowRightHalf] = useState(true);
 
@@ -932,6 +935,8 @@ export default function NoteBar() {
     const [inverseOnly, setInverseOnly] = useState(false);
 
     const [showChordLabel, setShowChordLabel] = useState(true);
+
+    const [showRemainLabel, setShowRemainLabel] = useState(false);
 
     const [wrongKey, setWrongKey] = useState(false);
 
@@ -1015,7 +1020,7 @@ export default function NoteBar() {
     }, [time, withChord, virtualPianoHighlight]);
 
     const firstNote = MidiNumbers.fromNote('c2');
-    const lastNote = MidiNumbers.fromNote('c6');
+    const lastNote = MidiNumbers.fromNote('D6');
     const keyboardShortcuts = KeyboardShortcuts.create({
         firstNote: firstNote,
         lastNote: lastNote,
@@ -1200,6 +1205,11 @@ export default function NoteBar() {
         setShowVirtualPiano(prev => !prev);
     }, []);
 
+    const onToggleRemainLabelChange = useCallback(() => {
+        setShowRemainLabel(prev => !prev);
+    }, []);
+
+
     const onToggleVirtualPianoHighlightChange = useCallback(() => {
         setVirtualPianoHighlight(prev => !prev);
     }, []);
@@ -1213,6 +1223,17 @@ export default function NoteBar() {
     }, [withChord]);
 
     const onKeyboardPlayNote = useCallback((midiNumber) => {
+        if (midiNumber === 86) {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            })
+            setTimeout(() => {
+                setShowControl(state => !state);
+            }, 500);
+
+            return;
+        }
         if (withChord) {
 
             playedNote.current.push(midiNumber);
@@ -1247,7 +1268,7 @@ export default function NoteBar() {
             <div id="connection" className={midiConnected ? 'connected' : undefined}>
                 Midi {midiConnected ? 'connected' : 'not connected'}
             </div>
-            <div id="remaining">Remaining: {cardLeft}</div>
+            {showRemainLabel && <div id="remaining">Remaining: {cardLeft}</div>}
             <div
                 className="Note-Bar"
                 onClick={onClick}
@@ -1255,11 +1276,13 @@ export default function NoteBar() {
                 {withChord && showChordLabel && <span style={{
                     position: 'absolute',
                     top: 50,
-                    right: -100,
+                    left: 500,
+                    width: 300,
+                    display: 'flex',
                     fontSize: 30,
                     fontWeight: 'bold',
                     color: '#FFF',
-                    backgroundColor: '#000',
+                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
                     padding: '10px 12px',
                     borderRadius: '10px'
                 }}>{selectedChord.current.symbol}</span>}
@@ -1285,176 +1308,198 @@ export default function NoteBar() {
                     playNote={onKeyboardPlayNote}
                     stopNote={() => { }}
                     width={1000}
+                    keyWidthToHeight={0.22}
                     keyboardShortcuts={keyboardShortcuts}
+                    renderNoteLabel={({ keyboardShortcut, midiNumber, isActive, isAccidental }) =>
+                        midiNumber === 86 ? (
+                          <div
+                            className={classNames('ReactPiano__NoteLabel', {
+                              'ReactPiano__NoteLabel--active': isActive,
+                              'ReactPiano__NoteLabel--accidental': isAccidental,
+                              'ReactPiano__NoteLabel--natural': !isAccidental,
+                            })}
+                          >
+                            CP
+                          </div>
+                        ) : null}
                 />
             </div>}
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='with-chord'
-                    checked={withChord}
-                    onChange={onWithChordChange} />
-                <div htmlFor='with-chord'> Chord</div>
-            </div>
+            {showControl && <div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='with-chord'
+                        checked={withChord}
+                        onChange={onWithChordChange} />
+                    <div htmlFor='with-chord'> Chord</div>
+                </div>
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    disabled={!withChord}
-                    id='with-inverse1'
-                    checked={withInverse1}
-                    onChange={() => {
-                        if (withInverse1) {
-                            setInverse1Only(false);
-                        } else {
-                            setInverse2Only(false);
-                        }
-                        setWithInverse1(state => !state);
-                        setInverseOnly(false);
-                    }} />
-                <div htmlFor='with-inverse1'> Inverse 1</div>
-            </div>
-
-
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='inverse1-only'
-                    disabled={!withChord}
-                    checked={inverse1Only}
-                    onChange={() => {
-                        if (!inverse1Only) {
-                            setWithInverse1(true);
-                            setInverse2Only(false);
-                            setWithInverse2(false);
-                        }
-                        setInverse1Only(state => !state);
-                        setInverseOnly(false);
-                    }} />
-                <div htmlFor='with-inverse1'> Inverse 1 Only</div>
-            </div>
-
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='with-inverse2'
-                    disabled={!withChord}
-                    checked={withInverse2}
-                    onChange={() => {
-                        if (withInverse2) {
-                            setInverse2Only(false);
-                        } else {
-                            setInverse1Only(false);
-                        }
-                        setWithInverse2(state => !state);
-                        setInverseOnly(false);
-                    }} />
-                <div htmlFor='with-inverse2'> Inverse 2</div>
-            </div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        disabled={!withChord}
+                        id='with-inverse1'
+                        checked={withInverse1}
+                        onChange={() => {
+                            if (withInverse1) {
+                                setInverse1Only(false);
+                            } else {
+                                setInverse2Only(false);
+                            }
+                            setWithInverse1(state => !state);
+                            setInverseOnly(false);
+                        }} />
+                    <div htmlFor='with-inverse1'> Inverse 1</div>
+                </div>
 
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='inverse2-only'
-                    disabled={!withChord}
-                    checked={inverse2Only}
-                    onChange={() => {
-                        if (!inverse2Only) {
-                            setWithInverse2(true);
-                            setInverse1Only(false);
-                            setWithInverse1(false);
-                        }
-                        setInverse2Only(state => !state);
-                        setInverseOnly(false);
-                    }} />
-                <div htmlFor='with-inverse2'> Inverse 2 Only</div>
-            </div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='inverse1-only'
+                        disabled={!withChord}
+                        checked={inverse1Only}
+                        onChange={() => {
+                            if (!inverse1Only) {
+                                setWithInverse1(true);
+                                setInverse2Only(false);
+                                setWithInverse2(false);
+                            }
+                            setInverse1Only(state => !state);
+                            setInverseOnly(false);
+                        }} />
+                    <div htmlFor='with-inverse1'> Inverse 1 Only</div>
+                </div>
+
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='with-inverse2'
+                        disabled={!withChord}
+                        checked={withInverse2}
+                        onChange={() => {
+                            if (withInverse2) {
+                                setInverse2Only(false);
+                            } else {
+                                setInverse1Only(false);
+                            }
+                            setWithInverse2(state => !state);
+                            setInverseOnly(false);
+                        }} />
+                    <div htmlFor='with-inverse2'> Inverse 2</div>
+                </div>
 
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='inverse-only'
-                    disabled={!withChord}
-                    checked={inverseOnly}
-                    onChange={() => {
-                        if (!inverseOnly) {
-                            setWithInverse1(true);
-                            setWithInverse2(true);
-                            setInverse1Only(false);
-                            setInverse2Only(false);
-                        }
-                        setInverseOnly(state => !state);
-                    }} />
-                <div htmlFor='with-inverse2'> Inverse 1 & 2 Only</div>
-            </div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='inverse2-only'
+                        disabled={!withChord}
+                        checked={inverse2Only}
+                        onChange={() => {
+                            if (!inverse2Only) {
+                                setWithInverse2(true);
+                                setInverse1Only(false);
+                                setWithInverse1(false);
+                            }
+                            setInverse2Only(state => !state);
+                            setInverseOnly(false);
+                        }} />
+                    <div htmlFor='with-inverse2'> Inverse 2 Only</div>
+                </div>
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='with-minor'
-                    disabled={!withChord}
-                    checked={withMinor}
-                    onChange={onWithMinorChange} />
-                <div htmlFor='with-minor'>Minor</div>
-            </div>
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='minor-only'
-                    disabled={!withChord}
-                    checked={minorOnly}
-                    onChange={() => {
-                        if (!minorOnly) {
-                            setWithMinor(true);
-                        }
-                        setMinorOnly(state => !state);
-                    }} />
-                <div htmlFor='with-minor'> Minor Only</div>
-            </div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='inverse-only'
+                        disabled={!withChord}
+                        checked={inverseOnly}
+                        onChange={() => {
+                            if (!inverseOnly) {
+                                setWithInverse1(true);
+                                setWithInverse2(true);
+                                setInverse1Only(false);
+                                setInverse2Only(false);
+                            }
+                            setInverseOnly(state => !state);
+                        }} />
+                    <div htmlFor='with-inverse2'> Inverse 1 & 2 Only</div>
+                </div>
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='show-chord-label'
-                    disabled={!withChord}
-                    checked={showChordLabel}
-                    onChange={onShowChordLabelChange} />
-                <div htmlFor='show-chord-label'>Show Chord label</div>
-            </div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='with-minor'
+                        disabled={!withChord}
+                        checked={withMinor}
+                        onChange={onWithMinorChange} />
+                    <div htmlFor='with-minor'>Minor</div>
+                </div>
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='cheese-status'
-                    checked={showKey}
-                    onChange={onToggleChange} />
-                <div htmlFor='cheese-status'> Show Key</div>
-            </div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='minor-only'
+                        disabled={!withChord}
+                        checked={minorOnly}
+                        onChange={() => {
+                            if (!minorOnly) {
+                                setWithMinor(true);
+                            }
+                            setMinorOnly(state => !state);
+                        }} />
+                    <div htmlFor='with-minor'> Minor Only</div>
+                </div>
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='left-half'
-                    checked={showLeftHalf}
-                    onChange={onToggleLeftChange} />
-                <div htmlFor='left-half'> Left Half</div>
-            </div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='show-chord-label'
+                        disabled={!withChord}
+                        checked={showChordLabel}
+                        onChange={onShowChordLabelChange} />
+                    <div htmlFor='show-chord-label'>Show Chord label</div>
+                </div>
 
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='right-half'
-                    checked={showRightHalf}
-                    onChange={onToggleRightChange} />
-                <div htmlFor='right-half'> Right Half</div>
-            </div>
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='virtual-piano'
-                    checked={showVirtualPiano}
-                    onChange={onToggleVirtualPianoChange} />
-                <div htmlFor='right-half'>Show Virtual Piano</div>
-            </div>
-            <div className='Toogle-wrapper'>
-                <Toggle
-                    id='virtual-piano-highlight'
-                    checked={virtualPianoHighlight}
-                    disabled={!showVirtualPiano}
-                    onChange={onToggleVirtualPianoHighlightChange} />
-                <div htmlFor='right-half'>Highlight Key</div>
-            </div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='cheese-status'
+                        checked={showKey}
+                        onChange={onToggleChange} />
+                    <div htmlFor='cheese-status'> Show Key</div>
+                </div>
+
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='left-half'
+                        checked={showLeftHalf}
+                        onChange={onToggleLeftChange} />
+                    <div htmlFor='left-half'> Left Half</div>
+                </div>
+
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='right-half'
+                        checked={showRightHalf}
+                        onChange={onToggleRightChange} />
+                    <div htmlFor='right-half'> Right Half</div>
+                </div>
+                {/* <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='virtual-piano'
+                        checked={showVirtualPiano}
+                        onChange={onToggleVirtualPianoChange} />
+                    <div htmlFor='right-half'>Show Virtual Piano</div>
+                </div> */}
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='virtual-piano-highlight'
+                        checked={virtualPianoHighlight}
+                        disabled={!showVirtualPiano}
+                        onChange={onToggleVirtualPianoHighlightChange} />
+                    <div htmlFor='right-half'>Highlight Key</div>
+                </div>
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='remain-label'
+                        checked={showRemainLabel}
+                        onChange={onToggleRemainLabelChange} />
+                    <div htmlFor='right-half'>Remaining Cards</div>
+                </div>
+            </div>}
 
         </div></>
 }
