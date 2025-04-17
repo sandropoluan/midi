@@ -913,7 +913,7 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
 
 export default function NoteBar() {
 
-    const [showControl, setShowControl] = useState(true);
+    const [showControl, setShowControl] = useState(false);
 
     const [showLeftHalf, setShowLeftHalf] = useState(true);
     const [showRightHalf, setShowRightHalf] = useState(true);
@@ -934,7 +934,7 @@ export default function NoteBar() {
 
     const [inverseOnly, setInverseOnly] = useState(false);
 
-    const [showChordLabel, setShowChordLabel] = useState(true);
+    const [showChordLabel, setShowChordLabel] = useState(false);
 
     const [showRemainLabel, setShowRemainLabel] = useState(false);
 
