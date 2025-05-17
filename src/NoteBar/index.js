@@ -893,6 +893,18 @@ for (const chordKey of Object.keys(chordMap)) {
         }
         newChordMap[chordKey + '7'] = _7;
     }
+
+
+    if(chord.keys[0] - 3 >= 36){
+        const _6 = {
+            symbol: chord.symbol + '6',
+            keys: [chord.keys[0] - 3, chord.keys[1], chord.keys[2]],
+        }
+        if(chord.mask) {
+            _6.mask = [chord.keys[0] - 3, chord.mask[1], chord.mask[2]];
+        }
+        newChordMap[chordKey + '6'] = _6;
+    }
 }
 
 // Optionally, replace the original chordMap with the new ordered chordMap
@@ -907,7 +919,7 @@ const defaultPoolKeys = Object.keys(map).sort((a, b) => {
 
 const middleCindex = defaultChordMap.indexOf('C4');
 
-const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only }) => {
+const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, _6only }) => {
     return (item) => {
 
         let show = true;
@@ -933,6 +945,10 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
 
         if(_7only) {
             show &= item.includes('7');
+        }
+
+        if(_6only) {
+            show &= item.includes('6');
         }
 
         return show;
@@ -967,6 +983,7 @@ export default function NoteBar() {
     const [showRemainLabel, setShowRemainLabel] = useState(true);
 
     const [_7only, set_7Only] = useState(false);
+    const [_6only, set_6Only] = useState(false);
 
     const [wrongKey, setWrongKey] = useState(false);
 
@@ -981,7 +998,7 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only })));
+    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, _6only })));
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
@@ -1013,7 +1030,7 @@ export default function NoteBar() {
                 pool = [...defaultChordMap];
             }
 
-            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only }));
+            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, _6only }));
 
             defaultPollChords.current = pool;
             pollChords.current = pool;
@@ -1476,13 +1493,13 @@ export default function NoteBar() {
                 </div>
 
                 <div className='Toogle-wrapper'>
-                    <Toggle
+                    {/* <Toggle
                         id='seven-label'
                         checked={_7only}
                         onChange={() => {
                             set_7Only(state => !state);
                         }} />
-                    <div htmlFor='seven-label'>Seven Only</div>
+                    <div htmlFor='seven-label'>Seven Only</div> */}
                 </div>
 
                 <div className='Toogle-wrapper'>
