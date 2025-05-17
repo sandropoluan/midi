@@ -871,6 +871,28 @@ for (const chordKey of Object.keys(chordMap)) {
         }
         newChordMap[chordKey + 'Inverse2'] = inverse2;
     }
+
+    if(chord.keys[0] - 1 >= 36){
+        const major7 = {
+            symbol: chord.symbol + '△7',
+            keys: [chord.keys[0] - 1, chord.keys[1], chord.keys[2]],
+        }
+        if(chord.mask) {
+            major7.mask = [chord.keys[0] - 1, chord.mask[1], chord.mask[2]];
+        }
+        newChordMap[chordKey + '△7'] = major7;
+    }
+
+    if(chord.keys[0] - 2 >= 36){
+        const _7 = {
+            symbol: chord.symbol + '7',
+            keys: [chord.keys[0] - 2, chord.keys[1], chord.keys[2]],
+        }
+        if(chord.mask) {
+            _7.mask = [chord.keys[0] - 2, chord.mask[1], chord.mask[2]];
+        }
+        newChordMap[chordKey + '7'] = _7;
+    }
 }
 
 // Optionally, replace the original chordMap with the new ordered chordMap
@@ -883,7 +905,9 @@ const defaultPoolKeys = Object.keys(map).sort((a, b) => {
     return A - B;
 });
 
-const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly }) => {
+const middleCindex = defaultChordMap.indexOf('C4');
+
+const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only }) => {
     return (item) => {
 
         let show = true;
@@ -905,6 +929,10 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
 
         if (minorOnly) {
             show &= item.includes('Minor') || item.includes('m')
+        }
+
+        if(_7only) {
+            show &= item.includes('7');
         }
 
         return show;
@@ -934,9 +962,11 @@ export default function NoteBar() {
 
     const [inverseOnly, setInverseOnly] = useState(false);
 
-    const [showChordLabel, setShowChordLabel] = useState(false);
+    const [showChordLabel, setShowChordLabel] = useState(true);
 
-    const [showRemainLabel, setShowRemainLabel] = useState(false);
+    const [showRemainLabel, setShowRemainLabel] = useState(true);
+
+    const [_7only, set_7Only] = useState(false);
 
     const [wrongKey, setWrongKey] = useState(false);
 
@@ -951,7 +981,7 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly })));
+    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only })));
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
@@ -976,14 +1006,14 @@ export default function NoteBar() {
         if (withChord) {
             let pool = [];
             if (showLeftHalf && !showRightHalf) {
-                pool = defaultChordMap.slice(0, 134);
+                pool = defaultChordMap.slice(0, middleCindex);
             } else if (showRightHalf && !showLeftHalf) {
-                pool = defaultChordMap.slice(134);
+                pool = defaultChordMap.slice(middleCindex);
             } else {
                 pool = [...defaultChordMap];
             }
 
-            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly }));
+            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only }));
 
             defaultPollChords.current = pool;
             pollChords.current = pool;
@@ -1008,7 +1038,7 @@ export default function NoteBar() {
 
         setTime(new Date())
 
-    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly]);
+    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly, _7only]);
 
 
     const highlightedKeys = useMemo(() => {
@@ -1443,6 +1473,16 @@ export default function NoteBar() {
                             setMinorOnly(state => !state);
                         }} />
                     <div htmlFor='with-minor'> Minor Only</div>
+                </div>
+
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='seven-label'
+                        checked={_7only}
+                        onChange={() => {
+                            set_7Only(state => !state);
+                        }} />
+                    <div htmlFor='seven-label'>Seven Only</div>
                 </div>
 
                 <div className='Toogle-wrapper'>
