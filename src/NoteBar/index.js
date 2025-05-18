@@ -944,7 +944,7 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
         }
 
         if(_7only) {
-            show &= item.includes('7');
+            show &= (item.includes('7') || item.includes('6'));
         }
 
         if(_6only) {
@@ -1493,13 +1493,13 @@ export default function NoteBar() {
                 </div>
 
                 <div className='Toogle-wrapper'>
-                    {/* <Toggle
+                    <Toggle
                         id='seven-label'
                         checked={_7only}
                         onChange={() => {
                             set_7Only(state => !state);
                         }} />
-                    <div htmlFor='seven-label'>Seven Only</div> */}
+                    <div htmlFor='seven-label'>Seven Only</div>
                 </div>
 
                 <div className='Toogle-wrapper'>
