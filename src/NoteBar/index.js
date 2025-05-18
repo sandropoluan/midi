@@ -919,7 +919,7 @@ const defaultPoolKeys = Object.keys(map).sort((a, b) => {
 
 const middleCindex = defaultChordMap.indexOf('C4');
 
-const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, _6only }) => {
+const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7 }) => {
     return (item) => {
 
         let show = true;
@@ -943,12 +943,12 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
             show &= item.includes('Minor') || item.includes('m')
         }
 
-        if(_7only) {
-            show &= (item.includes('7') || item.includes('6'));
+        if(!with7) {
+            show &= !item.includes('7') && !item.includes('6');
         }
 
-        if(_6only) {
-            show &= item.includes('6');
+        if(_7only) {
+            show &= (item.includes('7') || item.includes('6'));
         }
 
         return show;
@@ -983,7 +983,7 @@ export default function NoteBar() {
     const [showRemainLabel, setShowRemainLabel] = useState(true);
 
     const [_7only, set_7Only] = useState(false);
-    const [_6only, set_6Only] = useState(false);
+    const [with7, setWith7] = useState(true);
 
     const [wrongKey, setWrongKey] = useState(false);
 
@@ -998,7 +998,7 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, _6only })));
+    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7 })));
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
@@ -1030,7 +1030,7 @@ export default function NoteBar() {
                 pool = [...defaultChordMap];
             }
 
-            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, _6only }));
+            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7 }));
 
             defaultPollChords.current = pool;
             pollChords.current = pool;
@@ -1055,7 +1055,7 @@ export default function NoteBar() {
 
         setTime(new Date())
 
-    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly, _7only]);
+    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly, _7only, with7]);
 
 
     const highlightedKeys = useMemo(() => {
@@ -1065,6 +1065,8 @@ export default function NoteBar() {
         return [+(`${poolKeys.current[selectedIdx.current]}`.split("-")[0])];
 
     }, [time, withChord, virtualPianoHighlight]);
+
+    console.log({ highlightedKeys });
 
     const firstNote = MidiNumbers.fromNote('c2');
     const lastNote = MidiNumbers.fromNote('D6');
@@ -1492,14 +1494,33 @@ export default function NoteBar() {
                     <div htmlFor='with-minor'> Minor Only</div>
                 </div>
 
+
                 <div className='Toogle-wrapper'>
                     <Toggle
-                        id='seven-label'
+                        id='with-7'
+                        disabled={!withChord}
+                        checked={with7}
+                        onChange={() => {
+                            if (with7) {
+                                set_7Only(false);
+                            }
+                            setWith7(state => !state);
+                        }} />
+                    <div htmlFor='with-minor'>With 6 & 7</div>
+                </div>
+
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='seven-only'
+                        disabled={!withChord}
                         checked={_7only}
                         onChange={() => {
+                            if (!_7only) {
+                                setWith7(true);
+                            }
                             set_7Only(state => !state);
                         }} />
-                    <div htmlFor='seven-label'>Seven Only</div>
+                    <div htmlFor='seven-only'>6 & 7 Only</div>
                 </div>
 
                 <div className='Toogle-wrapper'>
