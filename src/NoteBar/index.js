@@ -1422,6 +1422,8 @@ export default function NoteBar() {
                                 setInverse2Only(false);
                                 setWithInverse2(false);
                             }
+                            set_7Only(false);
+                            set_6Only(false);
                             setInverse1Only(state => !state);
                             setInverseOnly(false);
                         }} />
@@ -1457,6 +1459,8 @@ export default function NoteBar() {
                                 setInverse1Only(false);
                                 setWithInverse1(false);
                             }
+                            set_7Only(false);
+                            set_6Only(false);
                             setInverse2Only(state => !state);
                             setInverseOnly(false);
                         }} />
@@ -1476,6 +1480,8 @@ export default function NoteBar() {
                                 setInverse1Only(false);
                                 setInverse2Only(false);
                             }
+                            set_7Only(false);
+                            set_6Only(false);
                             setInverseOnly(state => !state);
                         }} />
                     <div htmlFor='with-inverse2'> Inverse 1 & 2 Only</div>
@@ -1532,6 +1538,9 @@ export default function NoteBar() {
                                 set_6Only(false);
                                 setWith6(false);
                             }
+                            setInverse1Only(false);
+                            setInverse2Only(false);
+                            setInverseOnly(false);
                             set_7Only(state => !state);
                         }} />
                     <div htmlFor='seven-only'>7 Only</div>
@@ -1565,6 +1574,8 @@ export default function NoteBar() {
                                 set_7Only(false);
                                 setWith6(true);
                             }
+                            setInverse1Only(false);
+                            setInverse2Only(false);
                             set_6Only(state => !state);
                         }} />
                     <div htmlFor='six-only'>6 Only</div>
