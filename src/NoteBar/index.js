@@ -531,7 +531,7 @@ let chordMap = {
         mask: ['45', 48, '52']
     },
     'G#m2': {
-        symbol: 'G#m,A♭m',
+        symbol: 'G#m/A♭m',
         keys: [36 + 8, 36 + 8 + 3, 36 + 8 + 7], // [44, 47, 51]
     },
     'A2': {
@@ -919,8 +919,13 @@ const defaultPoolKeys = Object.keys(map).sort((a, b) => {
 
 const middleCindex = defaultChordMap.indexOf('C4');
 
-const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7, _6only, with6 }) => {
+const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7, _6only, with6, pickedChords }) => {
     return (item) => {
+
+        if (pickedChords.length) {
+            const { symbol } = chordMap[item];
+            return pickedChords.indexOf(symbol) > -1;
+        }
 
         let show = true;
         if (!withInverse1) {
@@ -963,7 +968,22 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
     }
 }
 
+let uniqueChords = [];
+
+for (let key in chordMap) {
+    const { symbol } = chordMap[key];
+    if (uniqueChords.indexOf(symbol) === -1) {
+        uniqueChords.push(symbol);
+    }
+}
+
+uniqueChords = uniqueChords.sort();
+
 export default function NoteBar() {
+
+
+
+    const [pickedChords, setPickedChords] = useState([]);
 
     const [showControl, setShowControl] = useState(false);
 
@@ -1008,7 +1028,7 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6 })));
+    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords })));
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
@@ -1040,7 +1060,7 @@ export default function NoteBar() {
                 pool = [...defaultChordMap];
             }
 
-            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6 }));
+            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords }));
 
             defaultPollChords.current = pool;
             pollChords.current = pool;
@@ -1065,7 +1085,7 @@ export default function NoteBar() {
 
         setTime(new Date())
 
-    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly, _7only, with7, _6only, with6]);
+    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords]);
 
 
     const highlightedKeys = useMemo(() => {
@@ -1635,6 +1655,45 @@ export default function NoteBar() {
                         onChange={onToggleRemainLabelChange} />
                     <div htmlFor='right-half'>Remaining Cards</div>
                 </div>
+
+                {withChord && <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: 12, marginBottom: 5 }}>
+                    {
+                        uniqueChords.map(key => {
+                            const selected = pickedChords.indexOf(key) > -1;
+                            return <span
+                                onClick={() => {
+                                    setPickedChords(prev => {
+                                        const prevState = [...prev];
+                                        const idx = prevState.indexOf(key);
+                                        if (idx === -1) {
+                                            prevState.push(key)
+                                        } else {
+                                            prevState.splice(idx, 1);
+                                        }
+
+                                        return prevState;
+                                    });
+
+                                    // set_6Only(false);
+                                    // set_7Only(false);
+                                    // setInverseOnly(false);
+                                    // setInverse1Only(false);
+                                    // setInverse2Only(false);
+                                    // setMinorOnly(false);
+                                }}
+
+                                style={{
+                                    cursor: 'pointer',
+                                    padding: '4px 6px',
+                                    backgroundColor: '#FFF',
+                                    borderRadius: 8,
+                                    marginRight: 6,
+                                    marginBottom: 6,
+                                    ...(selected ? { backgroundColor: '#ffe2ad', } : {})
+                                }}>{key}</span>
+                        })
+                    }
+                </div>}
             </div>}
 
         </div></>
