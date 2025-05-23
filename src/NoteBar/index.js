@@ -1347,6 +1347,24 @@ export default function NoteBar() {
         }
     }, [withChord, next, nextChord]);
 
+    const showedSymbol = useMemo(() => {
+        if(!withChord || !showChordLabel) return null;
+        const text = selectedChord.current.symbol;
+        const isMinor = text.includes('m');
+        const color = isMinor ? 'yellow': 'white';
+        if(text.includes('△')){
+
+            const chord = text.split('△')[0];
+            return <span style={{color}}>{chord}<span style={{color: 'red'}}>△</span>7</span>
+        } else if(text.includes('6')) {
+            const chord = text.split('6')[0];
+            return <span style={{color}}>{chord}<span style={{color: '#e28743'}}>6</span></span>;
+        } else {
+            return <span style={{color}}>{text}</span>;
+        }
+
+    }, [withChord, showChordLabel, selectedChord.current.symbol])
+
     return <>
         <div id="wrong-key-everlay" className={wrongKey ? 'show' : undefined}></div>
         <div className='Note-bar-container'>
@@ -1370,7 +1388,7 @@ export default function NoteBar() {
                     backgroundColor: 'rgba(0, 0, 0, 0.4)',
                     padding: '10px 12px',
                     borderRadius: '10px'
-                }}>{selectedChord.current.symbol}</span>}
+                }}>{showedSymbol}</span>}
                 {
                     (withChord && (selectedChord.current?.mask || selectedChord.current?.keys).map(keyNumber => {
                         const isFlat = typeof keyNumber === 'string';
