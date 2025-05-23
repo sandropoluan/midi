@@ -919,7 +919,7 @@ const defaultPoolKeys = Object.keys(map).sort((a, b) => {
 
 const middleCindex = defaultChordMap.indexOf('C4');
 
-const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7, _6only, with6, pickedChords }) => {
+const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7, _6only, with6, pickedChords, _67only }) => {
     return (item) => {
 
         if (pickedChords.length) {
@@ -962,6 +962,10 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
 
         if (_6only) {
             show &= item.includes('6');
+        }
+
+        if(_67only){
+             show &= item.includes('6') || item.includes('7')
         }
 
         return show;
@@ -1015,6 +1019,8 @@ export default function NoteBar() {
     const [with7, setWith7] = useState(true);
     const [with6, setWith6] = useState(true);
 
+    const [_67only, set_67Only] = useState(false);
+
     const [wrongKey, setWrongKey] = useState(false);
 
     const [showVirtualPiano, setShowVirtualPiano] = useState(true);
@@ -1028,7 +1034,7 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords })));
+    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords, _67only })));
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
@@ -1060,7 +1066,7 @@ export default function NoteBar() {
                 pool = [...defaultChordMap];
             }
 
-            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords }));
+            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords, _67only }));
 
             defaultPollChords.current = pool;
             pollChords.current = pool;
@@ -1085,7 +1091,7 @@ export default function NoteBar() {
 
         setTime(new Date())
 
-    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords]);
+    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords, _67only]);
 
 
     const highlightedKeys = useMemo(() => {
@@ -1442,6 +1448,7 @@ export default function NoteBar() {
                                 setInverse2Only(false);
                                 setWithInverse2(false);
                             }
+                            set_67Only(false);
                             set_7Only(false);
                             set_6Only(false);
                             setInverse1Only(state => !state);
@@ -1479,6 +1486,7 @@ export default function NoteBar() {
                                 setInverse1Only(false);
                                 setWithInverse1(false);
                             }
+                            set_67Only(false);
                             set_7Only(false);
                             set_6Only(false);
                             setInverse2Only(state => !state);
@@ -1500,6 +1508,7 @@ export default function NoteBar() {
                                 setInverse1Only(false);
                                 setInverse2Only(false);
                             }
+                            set_67Only(false);
                             set_7Only(false);
                             set_6Only(false);
                             setInverseOnly(state => !state);
@@ -1542,6 +1551,7 @@ export default function NoteBar() {
                             } else {
                                 set_6Only(false);
                             }
+                            set_67Only(false);
                             setWith7(state => !state);
                         }} />
                     <div htmlFor='with-7'>With 7</div>
@@ -1578,6 +1588,7 @@ export default function NoteBar() {
                             } else {
                                 set_7Only(false);
                             }
+                            set_67Only(false);
                             setWith6(state => !state);
                         }} />
                     <div htmlFor='with-six'>With 6</div>
@@ -1594,11 +1605,33 @@ export default function NoteBar() {
                                 set_7Only(false);
                                 setWith6(true);
                             }
+                            set_67Only(false);
                             setInverse1Only(false);
                             setInverse2Only(false);
+                            setInverseOnly(false);
                             set_6Only(state => !state);
                         }} />
                     <div htmlFor='six-only'>6 Only</div>
+                </div>
+
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='six-seven-only'
+                        disabled={!withChord}
+                        checked={_67only}
+                        onChange={() => {
+                            if (!_67only) {
+                                setWith7(true);
+                                setWith6(true);
+                            }
+                            set_6Only(false);
+                            set_7Only(false);
+                            setInverse1Only(false);
+                            setInverse2Only(false);
+                            setInverseOnly(false);
+                            set_67Only(state => !state);
+                        }} />
+                    <div htmlFor='six-seven-only'>6 and 7 Only</div>
                 </div>
 
                 <div className='Toogle-wrapper'>
