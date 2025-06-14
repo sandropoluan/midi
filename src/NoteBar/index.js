@@ -894,14 +894,18 @@ for (const chordKey of Object.keys(chordMap)) {
         newChordMap[chordKey + '7'] = _7;
     }
 
+    let show6 = chord.keys[2] + 2 <= 84;
+    if (chord.mask && chord.mask[2] !== undefined) {
+        show6 &= +chord.mask[2] + 2 <= 84;
+    }
 
-    if (chord.keys[0] - 3 >= 36) {
+    if (show6) {
         const _6 = {
             symbol: chord.symbol + '6',
-            keys: [chord.keys[0] - 3, chord.keys[1], chord.keys[2]],
+            keys: [chord.keys[0], chord.keys[1],chord.keys[2], +chord.keys[2] + 2],
         }
         if (chord.mask) {
-            _6.mask = [chord.keys[0] - 3, chord.mask[1], chord.mask[2]];
+            _6.mask = [chord.mask[0], chord.mask[1],chord.mask[2],+chord.keys[2] + 2];
         }
         newChordMap[chordKey + '6'] = _6;
     }
