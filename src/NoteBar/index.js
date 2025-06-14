@@ -1018,6 +1018,8 @@ export default function NoteBar() {
 
     const [showRemainLabel, setShowRemainLabel] = useState(true);
 
+    const [bluredChord, setBluredCorld] = useState(true);
+
     const [_7only, set_7Only] = useState(false);
     const [_6only, set_6Only] = useState(false);
     const [with7, setWith7] = useState(true);
@@ -1397,7 +1399,7 @@ export default function NoteBar() {
                     (withChord && (selectedChord.current?.mask || selectedChord.current?.keys).map(keyNumber => {
                         const isFlat = typeof keyNumber === 'string';
                         const { asset, y, bar, key: note, sharp } = map[keyNumber] || map[`${keyNumber}-sharp`];
-                        return <Key key={keyNumber} bar={bar} note={note} asset={asset} y={y} showKey={showKey} sharp={sharp && !isFlat} isFlat={isFlat} i={0} />
+                        return <Key key={keyNumber} bar={bar} note={note} asset={asset} y={y} showKey={showKey} sharp={sharp && !isFlat} isFlat={isFlat} i={0} blured={bluredChord} />
                     }))
                 }
                 {
@@ -1440,6 +1442,18 @@ export default function NoteBar() {
                         onChange={onWithChordChange} />
                     <div htmlFor='with-chord'> Chord</div>
                 </div>
+
+                <div className='Toogle-wrapper'>
+                    <Toggle
+                        id='blured-chord'
+                        disabled={!withChord}
+                        checked={bluredChord}
+                        onChange={() => {
+                            setBluredCorld(state => !state);
+                        }} />
+                    <div htmlFor='blured-chord'>blured Chord</div>
+                </div>
+
 
                 <div className='Toogle-wrapper'>
                     <Toggle
@@ -1757,7 +1771,7 @@ export default function NoteBar() {
 function Key(props) {
     const width = 53;
     const ratio = 1.81;
-    const { asset, y, bar, note, showKey, sharp, isFlat, i } = props;
+    const { asset, y, bar, note, showKey, sharp, isFlat, i, blured } = props;
 
     const topBarMap = {
         'top': -1,
@@ -1768,6 +1782,6 @@ function Key(props) {
     return <div style={{ width: width, height: width / ratio, position: 'absolute', left: i % 2 ? 250 : 250, top: y, backgroundImage: `url(${asset})`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain' }}>
         {bar && <div style={{ position: 'absolute', width: width + 12, height: 4, left: -8, top: topBarMap[bar], backgroundColor: 'black' }} />}
         {showKey && <span className='Key'>{note}{isFlat && '♭'}</span>}
-        {(sharp || isFlat) && <span style={{ position: 'absolute', fontSize: isFlat ? 45 : 30, fontWeight: 'bold', left: -20, top: isFlat ? -10 : -5 }}>{isFlat ? '♭' : '#'}</span>}
+        {(sharp || isFlat) && !blured && <span style={{ position: 'absolute', fontSize: isFlat ? 45 : 30, fontWeight: 'bold', left: -20, top: isFlat ? -10 : -5 }}>{isFlat ? '♭' : '#'}</span>}
     </div>
 }
