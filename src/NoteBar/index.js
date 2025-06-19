@@ -1222,7 +1222,7 @@ export default function NoteBar() {
                             }
                         });
 
-                        if (arraysEqual(chord, selectedChord.current.keys)) {
+                        if (arraysEqual(chord, combineArray(selectedChord.current.rootKeys, selectedChord.current.keys))) {
                             nextChord();
                         }
 
