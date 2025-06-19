@@ -45,6 +45,12 @@ function isSubArray(arr1, mainArray) {
     return true;
 }
 
+function combineArray(arr1 = [], arr2 = []) {
+    if (!arr1.length && !arr2.length) return undefined;
+
+    return [...arr1, ...arr2];
+
+}
 
 const map = {
     36: { // C2
@@ -835,6 +841,17 @@ for (const chordKey of Object.keys(chordMap)) {
 
     const chord = chordMap[chordKey];
 
+    const rootObj = {};
+
+    if (chord.keys[0] - 12 >= 36) {
+        rootObj['rootKeys'] = [chord.keys[0] - 12];
+        if (chord.mask?.length) {
+            rootObj['rootKeysMask'] = [typeof chord.mask[0] === 'string' ? `${+chord.mask[0] - 12}` : chord.mask[0] - 12];
+        }
+    }
+
+    newChordMap[chordKey] = { ...newChordMap[chordKey], ...rootObj };
+
     if (chord.keys[0] + 12 <= 84) {
         // Calculate first inversion: [second, third, root+12]
         const inverse1Keys = [chord.keys[1], chord.keys[2], chord.keys[0] + 12];
@@ -849,7 +866,7 @@ for (const chordKey of Object.keys(chordMap)) {
                 : maskRoot + 12;
             inverse1.mask = [chord.mask[1], chord.mask[2], newMaskRoot];
         }
-        newChordMap[chordKey + 'Inverse1'] = inverse1;
+        newChordMap[chordKey + 'Inverse1'] = { ...inverse1, ...rootObj };
     }
 
     if (chord.keys[2] - 12 >= 36) {
@@ -869,7 +886,7 @@ for (const chordKey of Object.keys(chordMap)) {
                 : maskC - 12;
             inverse2.mask = [newMaskC, maskA, maskB];
         }
-        newChordMap[chordKey + 'Inverse2'] = inverse2;
+        newChordMap[chordKey + 'Inverse2'] = { ...inverse2, ...rootObj };
     }
 
     if (chord.keys[0] - 1 >= 36) {
@@ -880,7 +897,7 @@ for (const chordKey of Object.keys(chordMap)) {
         if (chord.mask) {
             major7.mask = [chord.keys[0] - 1, chord.mask[1], chord.mask[2]];
         }
-        newChordMap[chordKey + '△7'] = major7;
+        newChordMap[chordKey + '△7'] = { ...major7, ...rootObj };
     }
 
     if (chord.keys[0] - 2 >= 36) {
@@ -891,7 +908,7 @@ for (const chordKey of Object.keys(chordMap)) {
         if (chord.mask) {
             _7.mask = [chord.keys[0] - 2, chord.mask[1], chord.mask[2]];
         }
-        newChordMap[chordKey + '7'] = _7;
+        newChordMap[chordKey + '7'] = { ..._7, ...rootObj };
     }
 
     let show6 = chord.keys[2] + 2 <= 84;
@@ -902,12 +919,12 @@ for (const chordKey of Object.keys(chordMap)) {
     if (show6) {
         const _6 = {
             symbol: chord.symbol + '6',
-            keys: [chord.keys[0], chord.keys[1],chord.keys[2], +chord.keys[2] + 2],
+            keys: [chord.keys[0], chord.keys[1], chord.keys[2], +chord.keys[2] + 2],
         }
         if (chord.mask) {
-            _6.mask = [chord.mask[0], chord.mask[1],chord.mask[2],+chord.keys[2] + 2];
+            _6.mask = [chord.mask[0], chord.mask[1], chord.mask[2], +chord.keys[2] + 2];
         }
-        newChordMap[chordKey + '6'] = _6;
+        newChordMap[chordKey + '6'] = { ..._6, ...rootObj };
     }
 }
 
@@ -968,8 +985,8 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
             show &= item.includes('6');
         }
 
-        if(_67only){
-             show &= item.includes('6') || item.includes('7')
+        if (_67only) {
+            show &= item.includes('6') || item.includes('7')
         }
 
         return show;
@@ -1102,7 +1119,7 @@ export default function NoteBar() {
 
     const highlightedKeys = useMemo(() => {
         if (!virtualPianoHighlight) return [];
-        if (withChord) return (selectedChord.current?.keys || []).map(item => +(`${item}`.split("-")[0]));
+        if (withChord) return (combineArray(selectedChord.current?.rootKeys, selectedChord.current?.keys) || []).map(item => +(`${item}`.split("-")[0]));
 
         return [+(`${poolKeys.current[selectedIdx.current]}`.split("-")[0])];
 
@@ -1328,7 +1345,8 @@ export default function NoteBar() {
         if (withChord) {
 
             playedNote.current.push(midiNumber);
-            const targetKeys = selectedChord.current.keys
+            const targetKeys = combineArray(selectedChord.current.rootKeys, selectedChord.current.keys) || [];
+            console.log('targetKeys', targetKeys, playedNote.current);
             if (
                 !targetKeys.includes(midiNumber) ||
                 !isSubArray(playedNote.current, targetKeys) ||
@@ -1354,19 +1372,19 @@ export default function NoteBar() {
     }, [withChord, next, nextChord]);
 
     const showedSymbol = useMemo(() => {
-        if(!withChord || !showChordLabel) return null;
+        if (!withChord || !showChordLabel) return null;
         const text = selectedChord.current.symbol;
         const isMinor = text.includes('m');
-        const color = isMinor ? 'yellow': 'white';
-        if(text.includes('△')){
+        const color = isMinor ? 'yellow' : 'white';
+        if (text.includes('△')) {
 
             const chord = text.split('△')[0];
-            return <span style={{color}}>{chord}<span style={{color: 'red'}}>△</span>7</span>
-        } else if(text.includes('6')) {
+            return <span style={{ color }}>{chord}<span style={{ color: 'red' }}>△</span>7</span>
+        } else if (text.includes('6')) {
             const chord = text.split('6')[0];
-            return <span style={{color}}>{chord}<span style={{color: '#e28743'}}>6</span></span>;
+            return <span style={{ color }}>{chord}<span style={{ color: '#e28743' }}>6</span></span>;
         } else {
-            return <span style={{color}}>{text}</span>;
+            return <span style={{ color }}>{text}</span>;
         }
 
     }, [withChord, showChordLabel, selectedChord.current.symbol])
@@ -1396,7 +1414,7 @@ export default function NoteBar() {
                     borderRadius: '10px'
                 }}>{showedSymbol}</span>}
                 {
-                    (withChord && (selectedChord.current?.mask || selectedChord.current?.keys).map(keyNumber => {
+                    (withChord && (combineArray(selectedChord.current?.rootKeysMask, selectedChord.current?.mask) || combineArray(selectedChord.current?.rootKeys, selectedChord.current?.keys)).map(keyNumber => {
                         const isFlat = typeof keyNumber === 'string';
                         const { asset, y, bar, key: note, sharp } = map[keyNumber] || map[`${keyNumber}-sharp`];
                         return <Key key={keyNumber} bar={bar} note={note} asset={asset} y={y} showKey={showKey} sharp={sharp && !isFlat} isFlat={isFlat} i={0} blured={bluredChord} />
