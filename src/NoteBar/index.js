@@ -931,16 +931,17 @@ for (const chordKey of Object.keys(chordMap)) {
 // Optionally, replace the original chordMap with the new ordered chordMap
 chordMap = newChordMap;
 
-const defaultChordMap = Object.keys(chordMap);
+
 const defaultPoolKeys = Object.keys(map).sort((a, b) => {
     const A = +(a.split('-')[0]);
     const B = +(b.split('-')[0]);
     return A - B;
 });
 
-const middleCindex = defaultChordMap.indexOf('C4');
 
-const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7, _6only, with6, pickedChords, _67only }) => {
+
+
+const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7, _6only, with6, pickedChords, _67only, _1octaveOnly }) => {
     return (item) => {
 
         if (pickedChords.length) {
@@ -987,6 +988,9 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
 
         if (_67only) {
             show &= item.includes('6') || item.includes('7')
+        }
+        if (_1octaveOnly) {
+            show &= item.includes('3');
         }
 
         return show;
@@ -1042,6 +1046,9 @@ export default function NoteBar() {
     const [with7, setWith7] = useState(true);
     const [with6, setWith6] = useState(true);
 
+    const [_1octaveOnly, set_1octaveOnly] = useState(true);
+
+
     const [_67only, set_67Only] = useState(false);
 
     const [wrongKey, setWrongKey] = useState(false);
@@ -1057,7 +1064,16 @@ export default function NoteBar() {
     const selectedIdx = useRef(Math.floor(poolKeys.current.length * Math.random()));
 
     const defaultPollChords = useRef([]);
-    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords, _67only })));
+
+    const defaultChordMap = useMemo(() =>{
+        const keys = Object.keys(chordMap);
+        if (_1octaveOnly) return [...keys, ...keys, ...keys, keys];
+       return keys;
+    }, [_1octaveOnly]);
+
+    const middleCindex = defaultChordMap.indexOf('C4');
+
+    const pollChords = useRef(defaultChordMap.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords, _67only, _1octaveOnly })));
     const selectedChordIdx = useRef(Math.floor(pollChords.current.length * Math.random()));
     const selectedChord = useRef(chordMap[pollChords.current[selectedChordIdx.current]]);
 
@@ -1089,7 +1105,7 @@ export default function NoteBar() {
                 pool = [...defaultChordMap];
             }
 
-            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords, _67only }));
+            pool = pool.filter(chordFilter({ withMinor, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords, _67only, _1octaveOnly }));
 
             defaultPollChords.current = pool;
             pollChords.current = pool;
@@ -1114,7 +1130,7 @@ export default function NoteBar() {
 
         setTime(new Date())
 
-    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords, _67only]);
+    }, [showLeftHalf, showRightHalf, withChord, withMinor, withInverse1, withInverse2, inverse1Only, inverseOnly, minorOnly, _7only, with7, _6only, with6, pickedChords, _67only, _1octaveOnly ]);
 
 
     const highlightedKeys = useMemo(() => {
