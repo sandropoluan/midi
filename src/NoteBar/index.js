@@ -990,7 +990,7 @@ const chordFilter = ({ withMinor, minorOnly, withInverse1, withInverse2, inverse
             show &= item.includes('6') || item.includes('7')
         }
         if (_1octaveOnly) {
-            show &= item.includes('3');
+            show &= item.includes('4');
         }
 
         return show;
