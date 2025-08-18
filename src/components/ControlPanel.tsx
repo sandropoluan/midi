@@ -27,6 +27,7 @@ interface ControlPanelProps {
     toggleShowRightHalf: () => void;
     toggleVirtualPianoHighlight: () => void;
     toggleShowRemainLabel: () => void;
+    toggle1OctaveOnly: () => void;
     setPickedChords: (chords: string[]) => void;
   };
   uniqueChords: string[];
@@ -66,6 +67,16 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           onChange={actions.toggleBluredChord} 
         />
         <div>blured Chord</div>
+      </div>
+
+      <div className='Toogle-wrapper'>
+        <Toggle 
+          id='1-octave-only' 
+          disabled={!state.withChord} 
+          checked={state._1octaveOnly} 
+          onChange={actions.toggle1OctaveOnly} 
+        />
+        <div>1 Octave Only</div>
       </div>
       
       <div className='Toogle-wrapper'>

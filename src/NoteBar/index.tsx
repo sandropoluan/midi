@@ -207,6 +207,7 @@ export default function NoteBar() {
             toggleShowRightHalf: actions.toggleShowRightHalf,
             toggleVirtualPianoHighlight: actions.toggleVirtualPianoHighlight,
             toggleShowRemainLabel: actions.toggleShowRemainLabel,
+            toggle1OctaveOnly: actions.toggle1OctaveOnly,
             setPickedChords: actions.setPickedChords,
           }}
           uniqueChords={uniqueChords}
