@@ -8,7 +8,7 @@ interface VirtualPianoProps {
   showVirtualPiano: boolean;
   highlightedKeys: number[];
   onKeyboardPlayNote: (midiNumber: number) => void;
-  keyboardShortcuts: any;
+  keyboardShortcuts: string;
 }
 
 export const VirtualPiano: React.FC<VirtualPianoProps> = ({ 

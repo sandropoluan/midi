@@ -31,19 +31,19 @@ export function useMidiInput({
     const chordWindow = MIDI_CONSTANTS.CHORD_WINDOW_MS;
     let disconnectedTimeout: NodeJS.Timeout;
     let retryTimeout: NodeJS.Timeout;
-    let inputs: any[] = [];
+    let inputs: MIDIInput[] = [];
 
     const cleanUp = () => {
       clearTimeout(disconnectedTimeout);
       clearTimeout(retryTimeout);
-      inputs.forEach((input: any) => {
+      inputs.forEach((input) => {
         if (input?.removeEventListener) {
           input.removeEventListener('midimessage', handleInput);
         }
       });
     };
 
-    const handleInput = (input: any) => {
+    const handleInput = (input: MIDIMessageEvent) => {
       if (input) {
         clearTimeout(disconnectedTimeout);
         onMidiConnected(true);
@@ -99,12 +99,12 @@ export function useMidiInput({
       }, 2000);
     };
 
-    const onSuccess = (midiAccess: any) => {
+    const onSuccess = (midiAccess: MIDIAccess) => {
       inputs = Array.from(midiAccess.inputs.values());
       if (!inputs.length && !midiConnectedRef.current) {
         retry();
       }
-      inputs.forEach((input: any) => {
+      inputs.forEach((input: MIDIInput) => {
         input.addEventListener('midimessage', handleInput);
       });
     };

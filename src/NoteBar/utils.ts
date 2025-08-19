@@ -76,7 +76,7 @@ export function buildChordMapWithVariants(baseChordMap: ChordMap): ChordMap {
                 const newMaskRoot = (typeof maskRoot === 'string')
                     ? String(Number(maskRoot) + 12)
                     : (maskRoot as number) + 12;
-                (inverse1 as any).mask = [chord.mask[1], chord.mask[2], newMaskRoot];
+                inverse1.mask = [chord.mask[1], chord.mask[2], newMaskRoot];
             }
             newChordMap[chordKey + 'Inverse1'] = { ...inverse1, ...rootObj } as ChordEntry;
         }
@@ -94,7 +94,7 @@ export function buildChordMapWithVariants(baseChordMap: ChordMap): ChordMap {
                 const newMaskC = (typeof maskC === 'string')
                     ? String(Number(maskC) - 12)
                     : (maskC as number) - 12;
-                (inverse2 as any).mask = [newMaskC, maskA, maskB];
+                inverse2.mask = [newMaskC, maskA, maskB];
             }
             newChordMap[chordKey + 'Inverse2'] = { ...inverse2, ...rootObj } as ChordEntry;
         }
@@ -105,7 +105,7 @@ export function buildChordMapWithVariants(baseChordMap: ChordMap): ChordMap {
                 keys: [chord.keys[0] - 1, chord.keys[1], chord.keys[2]],
             }
             if (chord.mask) {
-                (major7 as any).mask = [chord.keys[0] - 1, chord.mask[1], chord.mask[2]];
+                major7.mask = [chord.keys[0] - 1, chord.mask[1], chord.mask[2]];
             }
             newChordMap[chordKey + '△7'] = { ...major7, ...rootObj } as ChordEntry;
         }
@@ -116,7 +116,7 @@ export function buildChordMapWithVariants(baseChordMap: ChordMap): ChordMap {
                 keys: [chord.keys[0] - 2, chord.keys[1], chord.keys[2]],
             }
             if (chord.mask) {
-                (_7 as any).mask = [chord.keys[0] - 2, chord.mask[1], chord.mask[2]];
+                _7.mask = [chord.keys[0] - 2, chord.mask[1], chord.mask[2]];
             }
             newChordMap[chordKey + '7'] = { ..._7, ...rootObj } as ChordEntry;
         }
@@ -133,7 +133,7 @@ export function buildChordMapWithVariants(baseChordMap: ChordMap): ChordMap {
                 keys: [chord.keys[0], chord.keys[1], chord.keys[2], +chord.keys[2] + 2],
             }
             if (chord.mask) {
-                (_6 as any).mask = [chord.mask[0], chord.mask[1], chord.mask[2], +chord.keys[2] + 2];
+                _6.mask = [chord.mask[0], chord.mask[1], chord.mask[2], +chord.keys[2] + 2];
             }
             newChordMap[chordKey + '6'] = { ..._6, ...rootObj } as ChordEntry;
         }
@@ -162,7 +162,7 @@ export const createChordFilter = (chordMap: ChordMap, params: FilterParams) => {
   const { withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7, _6only, with6, pickedChords, _67only, _1octaveOnly } = params;
   return (item: string): boolean => {
     if (pickedChords.length) {
-      const { symbol } = chordMap[item] ?? {} as any;
+      const { symbol } = chordMap[item] ?? {};
       return pickedChords.indexOf(symbol) > -1;
     }
 

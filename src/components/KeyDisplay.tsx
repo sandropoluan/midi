@@ -23,14 +23,14 @@ export const KeyDisplay: React.FC<KeyDisplayProps> = ({
   noteMap,
 }) => {
   if (withChord && selectedChord) {
-    const keyNumbers = mergeArrays<any>(
+    const keyNumbers = mergeArrays(
       selectedChord.rootKeysMask,
       selectedChord.mask
-    ) || mergeArrays<any>(selectedChord.rootKeys, selectedChord.keys);
+    ) || mergeArrays(selectedChord.rootKeys, selectedChord.keys);
 
     return (
       <>
-        {keyNumbers?.map((keyNumber: any) => {
+        {keyNumbers?.map((keyNumber) => {
           const isFlat = typeof keyNumber === 'string';
           const noteKey = isFlat ? keyNumber : `${keyNumber}`;
           const noteEntry = noteMap[noteKey] || noteMap[`${keyNumber}-sharp`];
