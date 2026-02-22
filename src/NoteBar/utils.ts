@@ -57,10 +57,20 @@ export function buildChordMapWithVariants(baseChordMap: ChordMap): ChordMap {
         const chord = baseChordMap[chordKey];
 
         const rootObj: Partial<ChordEntry> = {};
+
         if (chord.keys[0] - 12 >= 36) {
             rootObj['rootKeys'] = [chord.keys[0] - 12];
             if (chord.mask?.length) {
                 rootObj['rootKeysMask'] = [typeof chord.mask[0] === 'string' ? `${+chord.mask[0] - 12}` : chord.mask[0] - 12];
+            }
+        }
+
+        if ( rootObj['rootKeys'] && rootObj['rootKeys'][0] - 24 >= 24) {
+
+            rootObj['rootKeys'].unshift(chord.keys[0] - 24);
+
+            if (chord.mask?.length) {
+                rootObj['rootKeysMask'][1] = typeof chord.mask[0] === 'string' ? `${+chord.mask[0] - 24}` : chord.mask[0] - 24;
             }
         }
         newChordMap[chordKey] = { ...newChordMap[chordKey], ...rootObj } as ChordEntry;
@@ -142,43 +152,43 @@ export function buildChordMapWithVariants(baseChordMap: ChordMap): ChordMap {
 }
 
 type FilterParams = {
-  withMinor: boolean;
-  minorOnly: boolean;
-  withInverse1: boolean;
-  withInverse2: boolean;
-  inverse1Only: boolean;
-  inverse2Only: boolean;
-  inverseOnly: boolean;
-  _7only: boolean;
-  with7: boolean;
-  _6only: boolean;
-  with6: boolean;
-  pickedChords: string[];
-  _67only: boolean;
-  _1octaveOnly: boolean;
+    withMinor: boolean;
+    minorOnly: boolean;
+    withInverse1: boolean;
+    withInverse2: boolean;
+    inverse1Only: boolean;
+    inverse2Only: boolean;
+    inverseOnly: boolean;
+    _7only: boolean;
+    with7: boolean;
+    _6only: boolean;
+    with6: boolean;
+    pickedChords: string[];
+    _67only: boolean;
+    _1octaveOnly: boolean;
 };
 
 export const createChordFilter = (chordMap: ChordMap, params: FilterParams) => {
-  const { withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7, _6only, with6, pickedChords, _67only, _1octaveOnly } = params;
-  return (item: string): boolean => {
-    if (pickedChords.length) {
-      const { symbol } = chordMap[item] ?? {};
-      return pickedChords.indexOf(symbol) > -1;
-    }
+    const { withMinor, minorOnly, withInverse1, withInverse2, inverse1Only, inverse2Only, inverseOnly, _7only, with7, _6only, with6, pickedChords, _67only, _1octaveOnly } = params;
+    return (item: string): boolean => {
+        if (pickedChords.length) {
+            const { symbol } = chordMap[item] ?? {};
+            return pickedChords.indexOf(symbol) > -1;
+        }
 
-    let show: boolean = true;
-    if (!withInverse1) show &&= !item.includes('Inverse1');
-    if (!withInverse2) show &&= !item.includes('Inverse2');
-    if (inverse1Only || inverse2Only || inverseOnly) show &&= item.includes('Inverse');
-    if (!withMinor) show &&= !item.includes('Minor') && !item.includes('m');
-    if (minorOnly) show &&= item.includes('Minor') || item.includes('m');
-    if (!with7) show &&= !item.includes('7');
-    if (_7only) show &&= item.includes('7');
-    if (!with6) show &&= !item.includes('6');
-    if (_6only) show &&= item.includes('6');
-    if (_67only) show &&= item.includes('6') || item.includes('7');
-    if (_1octaveOnly) show &&= item.includes('4');
-    return show;
-  }
+        let show: boolean = true;
+        if (!withInverse1) show &&= !item.includes('Inverse1');
+        if (!withInverse2) show &&= !item.includes('Inverse2');
+        if (inverse1Only || inverse2Only || inverseOnly) show &&= item.includes('Inverse');
+        if (!withMinor) show &&= !item.includes('Minor') && !item.includes('m');
+        if (minorOnly) show &&= item.includes('Minor') || item.includes('m');
+        if (!with7) show &&= !item.includes('7');
+        if (_7only) show &&= item.includes('7');
+        if (!with6) show &&= !item.includes('6');
+        if (_6only) show &&= item.includes('6');
+        if (_67only) show &&= item.includes('6') || item.includes('7');
+        if (_1octaveOnly) show &&= item.includes('4');
+        return show;
+    }
 }
 
