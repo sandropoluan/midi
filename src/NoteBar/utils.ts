@@ -65,7 +65,7 @@ export function buildChordMapWithVariants(baseChordMap: ChordMap): ChordMap {
             }
         }
 
-        if ( rootObj['rootKeys'] && rootObj['rootKeys'][0] - 24 >= 24) {
+        if ( rootObj['rootKeys'] && rootObj['rootKeys'][0] - 24 >= (36 - 12)) {
 
             rootObj['rootKeys'].unshift(chord.keys[0] - 24);
 
@@ -181,12 +181,12 @@ export const createChordFilter = (chordMap: ChordMap, params: FilterParams) => {
         if (!withInverse2) show &&= !item.includes('Inverse2');
         if (inverse1Only || inverse2Only || inverseOnly) show &&= item.includes('Inverse');
         if (!withMinor) show &&= !item.includes('Minor') && !item.includes('m');
-        if (minorOnly) show &&= item.includes('Minor') || item.includes('m');
+        if (minorOnly) show &&= (item.includes('Minor') || item.includes('m'));
         if (!with7) show &&= !item.includes('7');
         if (_7only) show &&= item.includes('7');
         if (!with6) show &&= !item.includes('6');
         if (_6only) show &&= item.includes('6');
-        if (_67only) show &&= item.includes('6') || item.includes('7');
+        if (_67only) show &&= (item.includes('6') || item.includes('7'));
         if (_1octaveOnly) show &&= item.includes('4');
         return show;
     }
