@@ -1,11 +1,16 @@
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import NoteBar from './NoteBar';
+import Pitch from './Pitch';
 
 export default function App() {
   return (
-    <div>
-      <NoteBar />
-    </div>
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<NoteBar />} />
+        <Route path="/pitch" element={<Pitch />} />
+      </Routes>
+    </HashRouter>
   );
 }
 

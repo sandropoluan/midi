@@ -1,0 +1,124 @@
+.pitch-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: white;
+  user-select: none;
+  position: relative;
+}
+
+.pitch-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+.pitch-start {
+  text-align: center;
+  animation: fadeIn 0.5s ease-in-out;
+
+  h2 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    font-weight: 300;
+    letter-spacing: 4px;
+  }
+
+  p {
+    font-size: 1.2rem;
+    opacity: 0.7;
+  }
+}
+
+.pitch-display {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.key-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+
+  .note {
+    font-size: 12rem;
+    font-weight: 700;
+    text-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+    line-height: 1;
+  }
+
+  .octave {
+    font-size: 4rem;
+    font-weight: 300;
+    opacity: 0.6;
+    vertical-align: sub;
+  }
+}
+
+.pitch-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 1.5rem;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 24px;
+  border-radius: 30px;
+  backdrop-filter: blur(10px);
+
+  .remaining {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #4ecca3;
+  }
+
+  .separator {
+    opacity: 0.5;
+  }
+
+  .total {
+    font-size: 1.2rem;
+    opacity: 0.7;
+  }
+
+  .label {
+    margin-left: 8px;
+    font-size: 1rem;
+    opacity: 0.6;
+  }
+}
+
+.pitch-instructions {
+  position: absolute;
+  bottom: 40px;
+  font-size: 0.9rem;
+  opacity: 0.4;
+  letter-spacing: 1px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
