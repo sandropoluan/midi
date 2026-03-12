@@ -1,8 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { VirtualPiano } from '../components/VirtualPiano';
+import { MIDI_CONSTANTS } from '../types';
 import './index.scss';
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const SCALE_DEGREES = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Ti'];
+const MAJOR_SCALE_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
 
 const noteNameToMidi = (noteName: string): number => {
   const match = noteName.match(/^([A-G]#?)(\d)$/);
@@ -11,6 +14,23 @@ const noteNameToMidi = (noteName: string): number => {
   const octave = parseInt(octaveStr, 10);
   const noteIndex = NOTES.indexOf(note);
   return (octave + 1) * 12 + noteIndex;
+};
+
+const generateScaleLabels = (rootMidi: number): Record<number, string> => {
+  const labels: Record<number, string> = {};
+  const rootNoteIndex = rootMidi % 12;
+  
+  for (let midi = MIDI_CONSTANTS.FIRST_MIDI_NOTE; midi <= MIDI_CONSTANTS.LAST_MIDI_NOTE; midi++) {
+    const noteIndex = midi % 12;
+    const intervalFromRoot = (noteIndex - rootNoteIndex + 12) % 12;
+    const scaleIndex = MAJOR_SCALE_INTERVALS.indexOf(intervalFromRoot);
+    
+    if (scaleIndex !== -1) {
+      labels[midi] = SCALE_DEGREES[scaleIndex];
+    }
+  }
+  
+  return labels;
 };
 
 const generateKeyPool = (): string[] => {
@@ -94,6 +114,11 @@ export default function Pitch() {
   const total = generateKeyPool().length;
   const currentMidi = currentKey ? noteNameToMidi(currentKey) : -1;
   const highlightedKeys = currentMidi > 0 ? [currentMidi] : [];
+  
+  const scaleLabels = useMemo(() => {
+    if (currentMidi <= 0) return {};
+    return generateScaleLabels(currentMidi);
+  }, [currentMidi]);
 
   return (
     <div className="pitch-container" onClick={handleContainerClick}>
@@ -124,6 +149,7 @@ export default function Pitch() {
         highlightedKeys={highlightedKeys}
         onKeyboardPlayNote={handleKeyboardPlayNote}
         keyboardShortcuts=""
+        scaleLabels={scaleLabels}
       />
       
       <div className="pitch-instructions">

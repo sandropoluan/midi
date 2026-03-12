@@ -10,13 +10,15 @@ interface VirtualPianoProps {
   highlightedKeys: number[];
   onKeyboardPlayNote: (midiNumber: number) => void;
   keyboardShortcuts: string;
+  scaleLabels?: Record<number, string>;
 }
 
 export const VirtualPiano: React.FC<VirtualPianoProps> = ({ 
   showVirtualPiano, 
   highlightedKeys, 
   onKeyboardPlayNote, 
-  keyboardShortcuts 
+  keyboardShortcuts,
+  scaleLabels
 }) => {
   const { playNote, stopNote } = usePianoSound();
 
@@ -44,19 +46,35 @@ export const VirtualPiano: React.FC<VirtualPianoProps> = ({
         width={1000}
         keyWidthToHeight={0.22}
         keyboardShortcuts={keyboardShortcuts}
-        renderNoteLabel={({ keyboardShortcut, midiNumber, isActive, isAccidental }) =>
-          midiNumber === MIDI_CONSTANTS.CONTROL_KEY_MIDI ? (
-            <div 
-              className={classNames('ReactPiano__NoteLabel', {
-                'ReactPiano__NoteLabel--active': isActive,
-                'ReactPiano__NoteLabel--accidental': isAccidental,
-                'ReactPiano__NoteLabel--natural': !isAccidental,
-              })}
-            >
-              CP
-            </div>
-          ) : null
-        }
+        renderNoteLabel={({ midiNumber, isActive, isAccidental }) => {
+          if (midiNumber === MIDI_CONSTANTS.CONTROL_KEY_MIDI) {
+            return (
+              <div 
+                className={classNames('ReactPiano__NoteLabel', {
+                  'ReactPiano__NoteLabel--active': isActive,
+                  'ReactPiano__NoteLabel--accidental': isAccidental,
+                  'ReactPiano__NoteLabel--natural': !isAccidental,
+                })}
+              >
+                CP
+              </div>
+            );
+          }
+          if (scaleLabels && scaleLabels[midiNumber]) {
+            return (
+              <div 
+                className={classNames('ReactPiano__NoteLabel', 'scale-label', {
+                  'ReactPiano__NoteLabel--active': isActive,
+                  'ReactPiano__NoteLabel--accidental': isAccidental,
+                  'ReactPiano__NoteLabel--natural': !isAccidental,
+                })}
+              >
+                {scaleLabels[midiNumber]}
+              </div>
+            );
+          }
+          return null;
+        }}
       />
     </div>
   );
