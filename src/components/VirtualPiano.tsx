@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { Piano } from 'react-piano';
 import 'react-piano/dist/styles.css';
 import { MIDI_CONSTANTS } from '../types';
+import { usePianoSound } from '../hooks/usePianoSound';
 
 interface VirtualPianoProps {
   showVirtualPiano: boolean;
@@ -17,6 +18,17 @@ export const VirtualPiano: React.FC<VirtualPianoProps> = ({
   onKeyboardPlayNote, 
   keyboardShortcuts 
 }) => {
+  const { playNote, stopNote } = usePianoSound();
+
+  const handlePlayNote = useCallback((midiNumber: number) => {
+    playNote(midiNumber);
+    onKeyboardPlayNote(midiNumber);
+  }, [playNote, onKeyboardPlayNote]);
+
+  const handleStopNote = useCallback((midiNumber: number) => {
+    stopNote(midiNumber);
+  }, [stopNote]);
+
   if (!showVirtualPiano) return null;
 
   return (
@@ -27,8 +39,8 @@ export const VirtualPiano: React.FC<VirtualPianoProps> = ({
           last: MIDI_CONSTANTS.LAST_MIDI_NOTE 
         }}
         highlightedKeys={highlightedKeys}
-        playNote={onKeyboardPlayNote}
-        stopNote={() => {}}
+        playNote={handlePlayNote}
+        stopNote={handleStopNote}
         width={1000}
         keyWidthToHeight={0.22}
         keyboardShortcuts={keyboardShortcuts}

@@ -9,13 +9,21 @@
   color: white;
   user-select: none;
   position: relative;
+  gap: 30px;
+  
+  .Piano-wrapper {
+    cursor: default;
+    width: auto;
+    display: flex;
+    justify-content: center;
+  }
 }
 
 .pitch-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 40px;
+  gap: 30px;
 }
 
 .pitch-start {
@@ -95,7 +103,7 @@
 
 .pitch-instructions {
   position: absolute;
-  bottom: 40px;
+  bottom: 20px;
   font-size: 0.9rem;
   opacity: 0.4;
   letter-spacing: 1px;

@@ -1,14 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
+import { VirtualPiano } from '../components/VirtualPiano';
 import './index.scss';
 
+const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+const noteNameToMidi = (noteName: string): number => {
+  const match = noteName.match(/^([A-G]#?)(\d)$/);
+  if (!match) return -1;
+  const [, note, octaveStr] = match;
+  const octave = parseInt(octaveStr, 10);
+  const noteIndex = NOTES.indexOf(note);
+  return (octave + 1) * 12 + noteIndex;
+};
+
 const generateKeyPool = (): string[] => {
-  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const pool: string[] = [];
 
   for (let octave = 2; octave <= 5; octave++) {
-    for (const note of notes) {
+    for (const note of NOTES) {
       // Skip notes below F2
-      if (octave === 2 && notes.indexOf(note) < notes.indexOf('F')) {
+      if (octave === 2 && NOTES.indexOf(note) < NOTES.indexOf('F')) {
         continue;
       }
       // Only include C5, skip everything else in octave 5
@@ -67,16 +78,25 @@ export default function Pitch() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [pickNextKey]);
 
-  const handleClick = () => {
-    pickNextKey();
+  const handleContainerClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.Piano-wrapper')) {
+      pickNextKey();
+    }
   };
+
+  const handleKeyboardPlayNote = useCallback(() => {
+    // No-op for pitch practice - we just want to play sounds
+  }, []);
 
   const { note, octave } = formatKeyDisplay(currentKey);
   const remaining = keyPool.length;
   const total = generateKeyPool().length;
+  const currentMidi = currentKey ? noteNameToMidi(currentKey) : -1;
+  const highlightedKeys = currentMidi > 0 ? [currentMidi] : [];
 
   return (
-    <div className="pitch-container" onClick={handleClick}>
+    <div className="pitch-container" onClick={handleContainerClick}>
       <div className="pitch-content">
         {!isStarted ? (
           <div className="pitch-start">
@@ -98,6 +118,14 @@ export default function Pitch() {
           <span className="label">keys remaining</span>
         </div>
       </div>
+      
+      <VirtualPiano
+        showVirtualPiano={true}
+        highlightedKeys={highlightedKeys}
+        onKeyboardPlayNote={handleKeyboardPlayNote}
+        keyboardShortcuts=""
+      />
+      
       <div className="pitch-instructions">
         Click or press Space for next key
       </div>
