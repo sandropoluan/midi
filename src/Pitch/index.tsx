@@ -99,6 +99,7 @@ export default function Pitch() {
   const [lastResult, setLastResult] = useState<{ success: boolean; accuracy: number } | null>(null);
   const [floatingHearts, setFloatingHearts] = useState<FloatingHeart[]>([]);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [isKeyLocked, setIsKeyLocked] = useState(false);
   
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerStartRef = useRef<number>(0);
@@ -256,6 +257,7 @@ export default function Pitch() {
 
   const handlePianoKeyClick = useCallback((midiNumber: number) => {
     if (selectionMode !== 'manual') return;
+    if (isKeyLocked) return;
     
     stopTimer(false);
     setLastResult(null);
@@ -264,7 +266,7 @@ export default function Pitch() {
     const noteName = midiToNoteName(midiNumber);
     setCurrentKey(noteName);
     setIsStarted(true);
-  }, [selectionMode, stopTimer]);
+  }, [selectionMode, stopTimer, isKeyLocked]);
 
 
   useEffect(() => {
@@ -537,13 +539,32 @@ export default function Pitch() {
         </div>
       )}
       
-      <VirtualPiano
-        showVirtualPiano={true}
-        highlightedKeys={highlightedKeys}
-        onKeyboardPlayNote={handlePianoKeyClick}
-        keyboardShortcuts=""
-        scaleLabels={scaleLabels}
-      />
+      <div className="piano-section">
+        <VirtualPiano
+          showVirtualPiano={true}
+          highlightedKeys={highlightedKeys}
+          onKeyboardPlayNote={handlePianoKeyClick}
+          keyboardShortcuts=""
+          scaleLabels={scaleLabels}
+        />
+        {selectionMode === 'manual' && (
+          <button 
+            className={`lock-toggle-mini ${isKeyLocked ? 'locked' : ''}`}
+            onClick={() => currentKey && setIsKeyLocked(prev => !prev)}
+            disabled={!currentKey}
+            title={!currentKey ? 'Select a key first' : isKeyLocked ? 'Unlock key selection' : 'Lock current key'}
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              {isKeyLocked ? (
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              ) : (
+                <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10z"/>
+              )}
+            </svg>
+            <span>{isKeyLocked ? 'Locked' : 'Unlocked'}</span>
+          </button>
+        )}
+      </div>
       
       <div className="pitch-instructions">
         {selectionMode === 'manual' 

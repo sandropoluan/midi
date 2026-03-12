@@ -27,8 +27,12 @@
 .Piano-wrapper {
     width: 100%;
     overflow-x: scroll;
-    padding: 50px 20px;
+    padding: 8px 20px;
     box-sizing: border-box;
+}
+
+.Piano-wrapper-padded {
+    padding: 40px 0;
 }
 
 .Key {

@@ -176,12 +176,14 @@ export default function NoteBar() {
           />
         </div>
 
-        <VirtualPiano
-          showVirtualPiano={state.showVirtualPiano}
-          highlightedKeys={highlightedKeys}
-          onKeyboardPlayNote={onKeyboardPlayNote}
-          keyboardShortcuts={PIANO_KEYBOARD_SHORTCUTS}
-        />
+        <div className="Piano-wrapper-padded">
+          <VirtualPiano
+            showVirtualPiano={state.showVirtualPiano}
+            highlightedKeys={highlightedKeys}
+            onKeyboardPlayNote={onKeyboardPlayNote}
+            keyboardShortcuts={PIANO_KEYBOARD_SHORTCUTS}
+          />
+        </div>
 
         <ControlPanel
           showControl={state.showControl}
