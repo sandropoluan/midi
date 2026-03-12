@@ -79,6 +79,14 @@ const formatKeyDisplay = (key: string): { note: string; octave: string } => {
 
 type SelectionMode = 'random' | 'manual';
 
+interface FloatingHeart {
+  id: number;
+  left: number;
+  delay: number;
+  duration: number;
+  size: number;
+}
+
 export default function Pitch() {
   const [keyPool, setKeyPool] = useState<string[]>(() => generateKeyPool());
   const [currentKey, setCurrentKey] = useState<string>('');
@@ -89,6 +97,8 @@ export default function Pitch() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [accuracy, setAccuracy] = useState(0);
   const [lastResult, setLastResult] = useState<{ success: boolean; accuracy: number } | null>(null);
+  const [floatingHearts, setFloatingHearts] = useState<FloatingHeart[]>([]);
+  const [showCelebration, setShowCelebration] = useState(false);
   
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerStartRef = useRef<number>(0);
@@ -96,6 +106,9 @@ export default function Pitch() {
   const totalSamplesRef = useRef<number>(0);
   const currentKeyRef = useRef<string>('');
   const pitchDataRef = useRef<typeof pitchData>(null);
+  const heartIdRef = useRef<number>(0);
+  const lastHeartTimeRef = useRef<number>(0);
+  const consecutiveCorrectRef = useRef<number>(0);
 
   const { pitchData, error, startListening, stopListening } = usePitchDetection();
 
@@ -115,8 +128,31 @@ export default function Pitch() {
     }
   }, []);
 
+  const spawnHearts = useCallback((count: number, isBurst: boolean = false) => {
+    const now = Date.now();
+    if (!isBurst && now - lastHeartTimeRef.current < 200) return;
+    lastHeartTimeRef.current = now;
+
+    const newHearts: FloatingHeart[] = [];
+    for (let i = 0; i < count; i++) {
+      newHearts.push({
+        id: heartIdRef.current++,
+        left: 5 + Math.random() * 90,
+        delay: isBurst ? Math.random() * 0.5 : Math.random() * 0.3,
+        duration: isBurst ? 2.5 + Math.random() * 2 : 2 + Math.random() * 1.5,
+        size: isBurst ? 35 + Math.random() * 35 : 30 + Math.random() * 25,
+      });
+    }
+    setFloatingHearts(prev => [...prev, ...newHearts]);
+
+    setTimeout(() => {
+      setFloatingHearts(prev => prev.filter(h => !newHearts.find(nh => nh.id === h.id)));
+    }, 5000);
+  }, []);
+
   const stopTimer = useCallback((completed: boolean = false) => {
     clearAllTimers();
+    consecutiveCorrectRef.current = 0;
     
     if (completed && totalSamplesRef.current > 0) {
       const finalAccuracy = Math.round((correctSamplesRef.current / totalSamplesRef.current) * 100);
@@ -126,13 +162,20 @@ export default function Pitch() {
       
       if (success) {
         setCorrectCount(prev => prev + 1);
+        setShowCelebration(true);
+        // Big burst of hearts on success
+        spawnHearts(15, true);
+        for (let i = 1; i <= 8; i++) {
+          setTimeout(() => spawnHearts(8, true), i * 150);
+        }
+        setTimeout(() => setShowCelebration(false), 4000);
       }
     }
     
     setIsTimerRunning(false);
     setTimerProgress(0);
     stopListening();
-  }, [clearAllTimers, stopListening]);
+  }, [clearAllTimers, stopListening, spawnHearts]);
 
   const startTimer = useCallback(async () => {
     clearAllTimers();
@@ -158,13 +201,25 @@ export default function Pitch() {
         totalSamplesRef.current += 1;
         
         const currentPitch = pitchDataRef.current;
+        let isCorrectNow = false;
         if (currentPitch) {
           const detectedNote = `${currentPitch.note}${currentPitch.octave}`;
           if (detectedNote === targetKey) {
             correctSamplesRef.current += 1;
+            isCorrectNow = true;
           }
         }
-        // If no pitch detected (silence), it counts as incorrect (no increment to correctSamples)
+        
+        // Spawn hearts when maintaining correct pitch
+        if (isCorrectNow) {
+          consecutiveCorrectRef.current += 1;
+          // Spawn hearts every ~0.75 second of correct pitch (15 ticks at 50ms)
+          if (consecutiveCorrectRef.current > 0 && consecutiveCorrectRef.current % 15 === 0) {
+            spawnHearts(3);
+          }
+        } else {
+          consecutiveCorrectRef.current = 0;
+        }
         
         const currentAccuracy = totalSamplesRef.current > 0 
           ? Math.round((correctSamplesRef.current / totalSamplesRef.current) * 100)
@@ -176,7 +231,7 @@ export default function Pitch() {
         stopTimer(true);
       }
     }, 50);
-  }, [clearAllTimers, startListening, stopTimer]);
+  }, [clearAllTimers, startListening, stopTimer, spawnHearts]);
 
   const pickNextKey = useCallback(() => {
     if (selectionMode === 'manual') return;
@@ -296,7 +351,35 @@ export default function Pitch() {
   const accuracyClass = accuracy >= ACCURACY_THRESHOLD ? 'high' : accuracy >= 50 ? 'medium' : 'low';
 
   return (
-    <div className={`pitch-container ${isCurrentlyCorrect ? 'currently-correct' : ''}`} onClick={handleContainerClick}>
+    <div className={`pitch-container ${isCurrentlyCorrect ? 'currently-correct' : ''} ${showCelebration ? 'celebrating' : ''}`} onClick={handleContainerClick}>
+      <div className="wave-background">
+        <div className="wave" />
+        <div className="wave" />
+        <div className="wave" />
+      </div>
+      <div className="sound-waves">
+        {Array.from({ length: 40 }).map((_, i) => (
+          <div key={i} className="bar" />
+        ))}
+      </div>
+      
+      <div className="floating-hearts">
+        {floatingHearts.map(heart => (
+          <div
+            key={heart.id}
+            className="heart"
+            style={{
+              left: `${heart.left}%`,
+              animationDelay: `${heart.delay}s`,
+              animationDuration: `${heart.duration}s`,
+              fontSize: `${heart.size}px`,
+            }}
+          >
+            💚
+          </div>
+        ))}
+      </div>
+      
       <div className="pitch-content">
         <div className="mode-toggle">
           <button 

@@ -11,6 +11,102 @@
   position: relative;
   gap: 24px;
   padding: 20px;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(ellipse 80% 50% at 20% 40%, rgba(78, 204, 163, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 80% 60%, rgba(93, 173, 226, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wave-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+
+    .wave {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      
+      &:nth-child(1) {
+        width: 600px;
+        height: 600px;
+        top: -150px;
+        left: -150px;
+        background: radial-gradient(circle, rgba(78, 204, 163, 0.5) 0%, rgba(78, 204, 163, 0.2) 50%, transparent 70%);
+        animation: floatBlob1 20s ease-in-out infinite;
+      }
+      
+      &:nth-child(2) {
+        width: 550px;
+        height: 550px;
+        bottom: -100px;
+        right: -150px;
+        background: radial-gradient(circle, rgba(93, 173, 226, 0.5) 0%, rgba(93, 173, 226, 0.2) 50%, transparent 70%);
+        animation: floatBlob2 25s ease-in-out infinite;
+      }
+      
+      &:nth-child(3) {
+        width: 450px;
+        height: 450px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(circle, rgba(155, 89, 182, 0.4) 0%, rgba(155, 89, 182, 0.15) 50%, transparent 70%);
+        animation: floatBlob3 18s ease-in-out infinite;
+      }
+    }
+  }
+
+  .sound-waves {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    pointer-events: none;
+    z-index: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 10%;
+    opacity: 0.35;
+
+    .bar {
+      width: 4px;
+      background: linear-gradient(to top, #4ecca3, #5dade2);
+      border-radius: 2px;
+      animation: soundBar 1.5s ease-in-out infinite;
+
+      @for $i from 1 through 40 {
+        &:nth-child(#{$i}) {
+          height: #{15 + random(60)}px;
+          animation-delay: #{$i * 0.05}s;
+          animation-duration: #{1 + random(10) * 0.1}s;
+        }
+      }
+    }
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
   
   .Piano-wrapper {
     cursor: default;
@@ -33,6 +129,124 @@
       color: #fff;
       background: rgba(78, 204, 163, 0.9);
     }
+  }
+}
+
+.floating-hearts {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 100;
+  overflow: hidden;
+
+  .heart {
+    position: absolute;
+    bottom: -50px;
+    animation: floatUp ease-out forwards;
+    opacity: 0;
+    filter: drop-shadow(0 0 10px rgba(78, 204, 163, 0.5));
+  }
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(0.5) rotate(-15deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-110vh) scale(1.2) rotate(15deg);
+    opacity: 0;
+  }
+}
+
+.pitch-container.celebrating {
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(78, 204, 163, 0.1) 0%, transparent 70%);
+    animation: celebratePulse 0.5s ease-out;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+@keyframes celebratePulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes floatBlob1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(100px, 50px) scale(1.1);
+  }
+  50% {
+    transform: translate(50px, 100px) scale(0.95);
+  }
+  75% {
+    transform: translate(-30px, 50px) scale(1.05);
+  }
+}
+
+@keyframes floatBlob2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-80px, -40px) scale(1.1);
+  }
+  50% {
+    transform: translate(-40px, -80px) scale(0.9);
+  }
+  75% {
+    transform: translate(30px, -40px) scale(1.05);
+  }
+}
+
+@keyframes floatBlob3 {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  33% {
+    transform: translate(-40%, -60%) scale(1.15);
+  }
+  66% {
+    transform: translate(-60%, -40%) scale(0.9);
+  }
+}
+
+@keyframes soundBar {
+  0%, 100% {
+    transform: scaleY(0.3);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
   }
 }
 
