@@ -87,6 +87,11 @@ interface FloatingHeart {
   size: number;
 }
 
+interface ToastMessage {
+  id: number;
+  message: string;
+}
+
 export default function Pitch() {
   const [keyPool, setKeyPool] = useState<string[]>(() => generateKeyPool());
   const [currentKey, setCurrentKey] = useState<string>('');
@@ -100,8 +105,10 @@ export default function Pitch() {
   const [floatingHearts, setFloatingHearts] = useState<FloatingHeart[]>([]);
   const [showCelebration, setShowCelebration] = useState(false);
   const [isKeyLocked, setIsKeyLocked] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const toastIdRef = useRef<number>(0);
   const timerStartRef = useRef<number>(0);
   const correctSamplesRef = useRef<number>(0);
   const totalSamplesRef = useRef<number>(0);
@@ -318,6 +325,24 @@ export default function Pitch() {
     setAccuracy(0);
   }, [stopTimer]);
 
+  const showToast = useCallback((message: string) => {
+    const id = toastIdRef.current++;
+    setToasts(prev => [...prev, { id, message }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
+  }, []);
+
+  const handleDisabledStartClick = useCallback(() => {
+    if (!currentKey) {
+      if (selectionMode === 'manual') {
+        showToast('Click a piano key to select, then press Start');
+      } else {
+        showToast('Click anywhere or press Space for next key, then press Start');
+      }
+    }
+  }, [currentKey, selectionMode, showToast]);
+
   const { note, octave } = formatKeyDisplay(currentKey);
   const remaining = keyPool.length;
   const total = generateKeyPool().length;
@@ -505,9 +530,14 @@ export default function Pitch() {
       
       <div className="mic-controls">
         <button 
-          className={`mic-button ${isTimerRunning ? 'active' : ''}`}
-          onClick={handleMicToggle}
-          disabled={!currentKey}
+          className={`mic-button ${isTimerRunning ? 'active' : ''} ${!currentKey ? 'disabled' : ''}`}
+          onClick={() => {
+            if (!currentKey) {
+              handleDisabledStartClick();
+            } else {
+              handleMicToggle();
+            }
+          }}
           title={!currentKey ? 'Select a key first' : isTimerRunning ? 'Stop listening' : 'Start listening'}
         >
           <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
@@ -540,13 +570,21 @@ export default function Pitch() {
       )}
       
       <div className="piano-section">
-        <VirtualPiano
-          showVirtualPiano={true}
-          highlightedKeys={highlightedKeys}
-          onKeyboardPlayNote={handlePianoKeyClick}
-          keyboardShortcuts=""
-          scaleLabels={scaleLabels}
-        />
+        <div className="piano-scroll-container">
+          <VirtualPiano
+            showVirtualPiano={true}
+            highlightedKeys={highlightedKeys}
+            onKeyboardPlayNote={handlePianoKeyClick}
+            keyboardShortcuts=""
+            scaleLabels={scaleLabels}
+          />
+        </div>
+        <div className="piano-scroll-hint">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
+          </svg>
+          <span>Swipe to scroll piano</span>
+        </div>
         {selectionMode === 'manual' && (
           <button 
             className={`lock-toggle-mini ${isKeyLocked ? 'locked' : ''}`}
@@ -572,6 +610,17 @@ export default function Pitch() {
           : isTimerRunning 
             ? `Hold the note for 15s with ${ACCURACY_THRESHOLD}%+ accuracy` 
             : 'Click or press Space for next key, then press Start'}
+      </div>
+      
+      <div className="toast-container">
+        {toasts.map(toast => (
+          <div key={toast.id} className="toast">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span>{toast.message}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
