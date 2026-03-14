@@ -85,6 +85,9 @@ export function usePianoSound() {
     const source = ctx.createBufferSource();
     const gainNode = ctx.createGain();
     
+    // Boost volume for better audibility on mobile devices
+    gainNode.gain.value = 2.5;
+    
     source.buffer = buffer;
     source.connect(gainNode);
     gainNode.connect(ctx.destination);
