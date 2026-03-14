@@ -1039,3 +1039,165 @@
     transform: scale(1.02);
   }
 }
+
+.song-selection {
+  text-align: center;
+  animation: fadeIn 0.5s ease-in-out;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    font-weight: 300;
+    letter-spacing: 4px;
+  }
+
+  p {
+    font-size: 0.95rem;
+    opacity: 0.7;
+    margin-bottom: 20px;
+  }
+}
+
+.song-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.song-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  text-align: left;
+
+  &:hover {
+    background: rgba(78, 204, 163, 0.15);
+    border-color: rgba(78, 204, 163, 0.5);
+    transform: translateY(-2px);
+  }
+
+  .song-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .song-artist {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .song-notes {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    color: #4ecca3;
+    margin-top: 4px;
+  }
+}
+
+.song-progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+  border-radius: 30px;
+  backdrop-filter: blur(10px);
+
+  .song-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4ecca3;
+    padding-right: 16px;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .note-progress {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+
+    .current-note {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .separator {
+      opacity: 0.5;
+    }
+
+    .total-notes {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+  }
+
+  .song-score {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    padding-left: 16px;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+
+    .score-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #4ecca3;
+    }
+
+    .score-label {
+      font-size: 0.75rem;
+      opacity: 0.6;
+    }
+  }
+}
+
+.timer-bar-container.song-timer {
+  .timer-bar {
+    background: linear-gradient(90deg, #5dade2, #4ecca3);
+  }
+}
+
+.mic-button.listen-button {
+  background: rgba(155, 89, 182, 0.2);
+  border-color: rgba(155, 89, 182, 0.4);
+  
+  &:hover:not(.disabled):not(:disabled) {
+    background: rgba(155, 89, 182, 0.3);
+    border-color: rgba(155, 89, 182, 0.6);
+  }
+  
+  &.active {
+    background: rgba(155, 89, 182, 0.4);
+    border-color: #9b59b6;
+    color: #bb8fce;
+    
+    svg {
+      animation: pulse 1s ease-in-out infinite;
+    }
+  }
+  
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.song-score.listening {
+  .score-label {
+    color: #bb8fce;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+}
