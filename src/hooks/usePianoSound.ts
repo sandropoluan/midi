@@ -8,7 +8,6 @@ const globalAudioCache = new Map<number, AudioBuffer>();
 let audioContext: AudioContext | null = null;
 let isPreloading = false;
 let preloadPromise: Promise<void> | null = null;
-let audioContextUnlocked = false;
 
 function midiToNoteName(midiNumber: number): string {
   const octave = Math.floor(midiNumber / 12) - 1;
@@ -23,23 +22,23 @@ function getAudioContext(): AudioContext {
   return audioContext;
 }
 
-async function unlockAudioContext(): Promise<void> {
-  if (audioContextUnlocked) return;
-  
+function unlockAndResumeAudio(): void {
   const ctx = getAudioContext();
   
   if (ctx.state === 'suspended') {
-    await ctx.resume();
+    ctx.resume();
   }
   
   // Play a silent buffer to fully unlock audio on iOS/mobile
-  const silentBuffer = ctx.createBuffer(1, 1, 22050);
-  const source = ctx.createBufferSource();
-  source.buffer = silentBuffer;
-  source.connect(ctx.destination);
-  source.start(0);
-  
-  audioContextUnlocked = true;
+  try {
+    const silentBuffer = ctx.createBuffer(1, 1, 22050);
+    const source = ctx.createBufferSource();
+    source.buffer = silentBuffer;
+    source.connect(ctx.destination);
+    source.start(0);
+  } catch {
+    // Ignore errors
+  }
 }
 
 async function preloadAllNotes(): Promise<void> {
@@ -84,33 +83,11 @@ export function usePianoSound() {
 
   useEffect(() => {
     preloadAllNotes().then(() => setIsLoaded(true));
-    
-    // Unlock audio context on first user interaction
-    const handleInteraction = () => {
-      unlockAudioContext();
-      // Remove listeners after first interaction
-      document.removeEventListener('touchstart', handleInteraction);
-      document.removeEventListener('touchend', handleInteraction);
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('keydown', handleInteraction);
-    };
-    
-    document.addEventListener('touchstart', handleInteraction, { passive: true });
-    document.addEventListener('touchend', handleInteraction, { passive: true });
-    document.addEventListener('click', handleInteraction);
-    document.addEventListener('keydown', handleInteraction);
-    
-    return () => {
-      document.removeEventListener('touchstart', handleInteraction);
-      document.removeEventListener('touchend', handleInteraction);
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('keydown', handleInteraction);
-    };
   }, []);
 
-  const playNote = useCallback(async (midiNumber: number) => {
-    // Ensure audio context is unlocked before playing
-    await unlockAudioContext();
+  const playNote = useCallback((midiNumber: number) => {
+    // Always try to unlock/resume audio context synchronously within user gesture
+    unlockAndResumeAudio();
     
     const buffer = globalAudioCache.get(midiNumber);
     if (!buffer) return;
@@ -127,8 +104,8 @@ export function usePianoSound() {
     const source = ctx.createBufferSource();
     const gainNode = ctx.createGain();
     
-    // Boost volume for better audibility on mobile devices
-    gainNode.gain.value = 3.0;
+    // Boost volume significantly for mobile devices
+   // gainNode.gain.value = 5.0;
     
     source.buffer = buffer;
     source.connect(gainNode);
