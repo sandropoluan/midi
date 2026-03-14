@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { VirtualPiano } from '../components/VirtualPiano';
+import { VirtualPiano, PreviewKey } from '../components/VirtualPiano';
 import { MIDI_CONSTANTS } from '../types';
 import { usePitchDetection } from '../hooks/usePitchDetection';
-import { perfectMelodyWithTiming, MelodyNote } from '../data/perfectMelody';
+import { usePianoSound } from '../hooks/usePianoSound';
+import { perfectMelodyWithTiming, MelodyNote, transposeMelody } from '../data/perfectMelody';
+import { perfectFullMelody } from '../data/perfectFullMelody';
 import './index.scss';
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -11,6 +13,7 @@ const MAJOR_SCALE_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
 const LISTENING_DURATION = 15000;
 const SONG_NOTE_DURATION = 3000;
 const ACCURACY_THRESHOLD = 80;
+const PREVIEW_NOTE_COUNT = 8; // Number of notes to preview (current + next 7)
 
 interface SongData {
   name: string;
@@ -19,7 +22,8 @@ interface SongData {
 }
 
 const AVAILABLE_SONGS: SongData[] = [
-  { name: 'Perfect', artist: 'Ed Sheeran', notes: perfectMelodyWithTiming },
+  { name: 'Perfect (Intro)', artist: 'Ed Sheeran', notes: perfectMelodyWithTiming },
+  { name: 'Perfect (Full)', artist: 'Ed Sheeran', notes: perfectFullMelody },
 ];
 
 const noteNameToMidi = (noteName: string): number => {
@@ -124,9 +128,10 @@ export default function Pitch() {
   const [songScore, setSongScore] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [autoPlayIndex, setAutoPlayIndex] = useState(0);
+  const [transpose, setTranspose] = useState(0);
+  const [freeMode, setFreeMode] = useState(false);
   
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const toastIdRef = useRef<number>(0);
   const timerStartRef = useRef<number>(0);
@@ -140,6 +145,7 @@ export default function Pitch() {
   const songNoteIndexRef = useRef<number>(0);
 
   const { pitchData, error, startListening, stopListening } = usePitchDetection();
+  const { playNote: playPianoNote } = usePianoSound();
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -164,39 +170,6 @@ export default function Pitch() {
       autoPlayIntervalRef.current = null;
     }
   }, []);
-
-  const getAudioContext = useCallback(() => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-    }
-    return audioContextRef.current;
-  }, []);
-
-  const playNote = useCallback((noteName: string, duration: number = 0.4) => {
-    const audioContext = getAudioContext();
-    const midi = noteNameToMidi(noteName);
-    if (midi < 0) return;
-    
-    const frequency = midiToFrequency(midi);
-    const now = audioContext.currentTime;
-    
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(frequency, now);
-    
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(0.3, now + 0.02);
-    gainNode.gain.exponentialRampToValueAtTime(0.15, now + duration * 0.3);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.start(now);
-    oscillator.stop(now + duration);
-  }, [getAudioContext]);
 
   const spawnHearts = useCallback((count: number, isBurst: boolean = false) => {
     const now = Date.now();
@@ -310,11 +283,9 @@ export default function Pitch() {
     stopListening();
   }, [clearAllTimers, stopListening]);
 
-  const advanceToNextSongNote = useCallback(() => {
-    if (!selectedSong) return;
-    
+  const advanceToNextSongNote = useCallback((songNotes: MelodyNote[]) => {
     const nextIndex = songNoteIndexRef.current + 1;
-    if (nextIndex >= selectedSong.notes.length) {
+    if (nextIndex >= songNotes.length) {
       stopSong();
       setShowCelebration(true);
       spawnHearts(20, true);
@@ -326,21 +297,21 @@ export default function Pitch() {
     }
     
     setSongNoteIndex(nextIndex);
-    setCurrentKey(selectedSong.notes[nextIndex].note);
+    setCurrentKey(songNotes[nextIndex].note);
     correctSamplesRef.current = 0;
     totalSamplesRef.current = 0;
     setAccuracy(0);
     timerStartRef.current = Date.now();
     setTimerProgress(0);
-  }, [selectedSong, stopSong, spawnHearts]);
+  }, [stopSong, spawnHearts]);
 
-  const startSong = useCallback(async () => {
-    if (!selectedSong) return;
+  const startSong = useCallback(async (songNotes: MelodyNote[], isFreeMode: boolean) => {
+    if (songNotes.length === 0) return;
     
     clearAllTimers();
     setSongNoteIndex(0);
     setSongScore(0);
-    setCurrentKey(selectedSong.notes[0].note);
+    setCurrentKey(songNotes[0].note);
     setLastResult(null);
     setAccuracy(0);
     correctSamplesRef.current = 0;
@@ -352,54 +323,202 @@ export default function Pitch() {
     setIsSongPlaying(true);
     setTimerProgress(0);
     
-    timerIntervalRef.current = setInterval(() => {
-      const elapsed = Date.now() - timerStartRef.current;
-      const progress = Math.min((elapsed / SONG_NOTE_DURATION) * 100, 100);
-      setTimerProgress(progress);
+    if (isFreeMode) {
+      // Free mode: no timer, user advances manually
+      timerIntervalRef.current = setInterval(() => {
+        const targetKey = currentKeyRef.current;
+        if (targetKey) {
+          totalSamplesRef.current += 1;
+          
+          const currentPitch = pitchDataRef.current;
+          let isCorrectNow = false;
+          if (currentPitch) {
+            const detectedNote = `${currentPitch.note}${currentPitch.octave}`;
+            if (detectedNote === targetKey) {
+              correctSamplesRef.current += 1;
+              isCorrectNow = true;
+            }
+          }
+          
+          if (isCorrectNow) {
+            consecutiveCorrectRef.current += 1;
+            if (consecutiveCorrectRef.current > 0 && consecutiveCorrectRef.current % 10 === 0) {
+              spawnHearts(2);
+            }
+          } else {
+            consecutiveCorrectRef.current = 0;
+          }
+          
+          const currentAccuracy = totalSamplesRef.current > 0 
+            ? Math.round((correctSamplesRef.current / totalSamplesRef.current) * 100)
+            : 0;
+          setAccuracy(currentAccuracy);
+        }
+      }, 50);
+    } else {
+      // Timed mode: auto-advance after SONG_NOTE_DURATION
+      const notesRef = songNotes;
       
-      const targetKey = currentKeyRef.current;
-      if (targetKey) {
-        totalSamplesRef.current += 1;
+      timerIntervalRef.current = setInterval(() => {
+        const elapsed = Date.now() - timerStartRef.current;
+        const progress = Math.min((elapsed / SONG_NOTE_DURATION) * 100, 100);
+        setTimerProgress(progress);
         
-        const currentPitch = pitchDataRef.current;
-        let isCorrectNow = false;
-        if (currentPitch) {
-          const detectedNote = `${currentPitch.note}${currentPitch.octave}`;
-          if (detectedNote === targetKey) {
-            correctSamplesRef.current += 1;
-            isCorrectNow = true;
+        const targetKey = currentKeyRef.current;
+        if (targetKey) {
+          totalSamplesRef.current += 1;
+          
+          const currentPitch = pitchDataRef.current;
+          let isCorrectNow = false;
+          if (currentPitch) {
+            const detectedNote = `${currentPitch.note}${currentPitch.octave}`;
+            if (detectedNote === targetKey) {
+              correctSamplesRef.current += 1;
+              isCorrectNow = true;
+            }
           }
+          
+          if (isCorrectNow) {
+            consecutiveCorrectRef.current += 1;
+            if (consecutiveCorrectRef.current > 0 && consecutiveCorrectRef.current % 10 === 0) {
+              spawnHearts(2);
+            }
+          } else {
+            consecutiveCorrectRef.current = 0;
+          }
+          
+          const currentAccuracy = totalSamplesRef.current > 0 
+            ? Math.round((correctSamplesRef.current / totalSamplesRef.current) * 100)
+            : 0;
+          setAccuracy(currentAccuracy);
         }
         
-        if (isCorrectNow) {
-          consecutiveCorrectRef.current += 1;
-          if (consecutiveCorrectRef.current > 0 && consecutiveCorrectRef.current % 10 === 0) {
-            spawnHearts(2);
+        if (elapsed >= SONG_NOTE_DURATION) {
+          const finalAccuracy = totalSamplesRef.current > 0 
+            ? Math.round((correctSamplesRef.current / totalSamplesRef.current) * 100)
+            : 0;
+          
+          if (finalAccuracy >= ACCURACY_THRESHOLD) {
+            setSongScore(prev => prev + 1);
+            spawnHearts(5, true);
           }
-        } else {
-          consecutiveCorrectRef.current = 0;
+          
+          advanceToNextSongNote(notesRef);
         }
-        
-        const currentAccuracy = totalSamplesRef.current > 0 
-          ? Math.round((correctSamplesRef.current / totalSamplesRef.current) * 100)
-          : 0;
-        setAccuracy(currentAccuracy);
+      }, 50);
+    }
+  }, [clearAllTimers, startListening, spawnHearts, advanceToNextSongNote]);
+
+  const goToNextNote = useCallback((songNotes: MelodyNote[]) => {
+    if (!isSongPlaying || !freeMode) return;
+    
+    const finalAccuracy = totalSamplesRef.current > 0 
+      ? Math.round((correctSamplesRef.current / totalSamplesRef.current) * 100)
+      : 0;
+    
+    if (finalAccuracy >= ACCURACY_THRESHOLD) {
+      setSongScore(prev => prev + 1);
+      spawnHearts(5, true);
+    }
+    
+    advanceToNextSongNote(songNotes);
+  }, [isSongPlaying, freeMode, spawnHearts, advanceToNextSongNote]);
+
+  const goToPrevNote = useCallback((songNotes: MelodyNote[]) => {
+    if (!isSongPlaying || !freeMode) return;
+    
+    const prevIndex = Math.max(0, songNoteIndexRef.current - 1);
+    setSongNoteIndex(prevIndex);
+    setCurrentKey(songNotes[prevIndex].note);
+    correctSamplesRef.current = 0;
+    totalSamplesRef.current = 0;
+    setAccuracy(0);
+  }, [isSongPlaying, freeMode]);
+
+  const skipForward = useCallback((songNotes: MelodyNote[]) => {
+    if (!isSongPlaying || !freeMode) return;
+    
+    const nextIndex = Math.min(songNoteIndexRef.current + PREVIEW_NOTE_COUNT, songNotes.length - 1);
+    setSongNoteIndex(nextIndex);
+    setCurrentKey(songNotes[nextIndex].note);
+    correctSamplesRef.current = 0;
+    totalSamplesRef.current = 0;
+    setAccuracy(0);
+  }, [isSongPlaying, freeMode]);
+
+  const skipBackward = useCallback((songNotes: MelodyNote[]) => {
+    if (!isSongPlaying || !freeMode) return;
+    
+    const prevIndex = Math.max(0, songNoteIndexRef.current - PREVIEW_NOTE_COUNT);
+    setSongNoteIndex(prevIndex);
+    setCurrentKey(songNotes[prevIndex].note);
+    correctSamplesRef.current = 0;
+    totalSamplesRef.current = 0;
+    setAccuracy(0);
+  }, [isSongPlaying, freeMode]);
+
+  const playPreviewIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+  const [playingPreviewMidi, setPlayingPreviewMidi] = useState<number | null>(null);
+  const [playingPulseKey, setPlayingPulseKey] = useState(0); // Increments to trigger re-animation
+
+  const stopPlayPreview = useCallback(() => {
+    if (playPreviewIntervalRef.current) {
+      clearTimeout(playPreviewIntervalRef.current);
+      playPreviewIntervalRef.current = null;
+    }
+    setIsPlayingPreview(false);
+    setPlayingPreviewMidi(null);
+    setPlayingPulseKey(0);
+  }, []);
+
+  const playCurrentPreview = useCallback((songNotes: MelodyNote[]) => {
+    if (!freeMode || isPlayingPreview) return;
+    
+    const startIndex = songNoteIndexRef.current;
+    const endIndex = Math.min(startIndex + PREVIEW_NOTE_COUNT, songNotes.length);
+    const previewNotes = songNotes.slice(startIndex, endIndex);
+    
+    if (previewNotes.length === 0) return;
+    
+    setIsPlayingPreview(true);
+    
+    // Normalize timing - start from 0
+    const firstTime = previewNotes[0].timeMs;
+    const normalizedNotes = previewNotes.map(n => ({
+      ...n,
+      timeMs: n.timeMs - firstTime
+    }));
+    
+    // Play first note immediately
+    playPianoNote(normalizedNotes[0].midi);
+    setPlayingPreviewMidi(normalizedNotes[0].midi);
+    setPlayingPulseKey(1);
+    
+    // Schedule remaining notes
+    const scheduleNote = (index: number) => {
+      if (index >= normalizedNotes.length - 1) {
+        const lastNoteDuration = normalizedNotes[index].durationMs;
+        playPreviewIntervalRef.current = setTimeout(() => {
+          stopPlayPreview();
+        }, lastNoteDuration);
+        return;
       }
       
-      if (elapsed >= SONG_NOTE_DURATION) {
-        const finalAccuracy = totalSamplesRef.current > 0 
-          ? Math.round((correctSamplesRef.current / totalSamplesRef.current) * 100)
-          : 0;
-        
-        if (finalAccuracy >= ACCURACY_THRESHOLD) {
-          setSongScore(prev => prev + 1);
-          spawnHearts(5, true);
-        }
-        
-        advanceToNextSongNote();
-      }
-    }, 50);
-  }, [selectedSong, clearAllTimers, startListening, spawnHearts, advanceToNextSongNote]);
+      const currentNote = normalizedNotes[index];
+      const nextNote = normalizedNotes[index + 1];
+      const delay = nextNote.timeMs - currentNote.timeMs;
+      
+      playPreviewIntervalRef.current = setTimeout(() => {
+        playPianoNote(nextNote.midi);
+        setPlayingPreviewMidi(nextNote.midi);
+        setPlayingPulseKey(prev => prev + 1); // Increment to re-trigger animation
+        scheduleNote(index + 1);
+      }, delay);
+    };
+    
+    scheduleNote(0);
+  }, [freeMode, isPlayingPreview, playPianoNote, stopPlayPreview]);
 
   const stopAutoPlay = useCallback(() => {
     if (autoPlayIntervalRef.current) {
@@ -410,41 +529,41 @@ export default function Pitch() {
     setAutoPlayIndex(0);
   }, []);
 
-  const startAutoPlay = useCallback(() => {
-    if (!selectedSong) return;
+  const startAutoPlay = useCallback((songNotes: MelodyNote[]) => {
+    if (songNotes.length === 0) return;
     
     stopSong();
     setIsAutoPlaying(true);
     setAutoPlayIndex(0);
     
-    const firstNote = selectedSong.notes[0];
+    const firstNote = songNotes[0];
     setCurrentKey(firstNote.note);
-    playNote(firstNote.note, firstNote.durationMs / 1000);
+    playPianoNote(firstNote.midi);
     
     const scheduleNextNote = (index: number) => {
-      if (index >= selectedSong.notes.length - 1) {
-        const lastNoteDuration = selectedSong.notes[index].durationMs;
+      if (index >= songNotes.length - 1) {
+        const lastNoteDuration = songNotes[index].durationMs;
         autoPlayIntervalRef.current = setTimeout(() => {
           stopAutoPlay();
         }, lastNoteDuration);
         return;
       }
       
-      const currentNote = selectedSong.notes[index];
-      const nextNote = selectedSong.notes[index + 1];
+      const currentNote = songNotes[index];
+      const nextNote = songNotes[index + 1];
       const delay = nextNote.timeMs - currentNote.timeMs;
       
       autoPlayIntervalRef.current = setTimeout(() => {
         const newIndex = index + 1;
         setAutoPlayIndex(newIndex);
         setCurrentKey(nextNote.note);
-        playNote(nextNote.note, nextNote.durationMs / 1000);
+        playPianoNote(nextNote.midi);
         scheduleNextNote(newIndex);
       }, delay);
     };
     
     scheduleNextNote(0);
-  }, [selectedSong, stopSong, playNote, stopAutoPlay]);
+  }, [stopSong, playPianoNote, stopAutoPlay]);
 
   const pickNextKey = useCallback(() => {
     if (selectionMode === 'manual') return;
@@ -484,9 +603,6 @@ export default function Pitch() {
   useEffect(() => {
     return () => {
       clearAllTimers();
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
     };
   }, [clearAllTimers]);
 
@@ -561,18 +677,71 @@ export default function Pitch() {
   const total = generateKeyPool().length;
   const currentMidi = currentKey ? noteNameToMidi(currentKey) : -1;
   
-  const detectedMidi = pitchData && isTimerRunning ? pitchData.midiNumber : -1;
+  const detectedMidi = pitchData && (isTimerRunning || isSongPlaying) ? pitchData.midiNumber : -1;
   const highlightedKeys = useMemo(() => {
     const keys: number[] = [];
     if (currentMidi > 0) keys.push(currentMidi);
-    if (detectedMidi > 0 && detectedMidi !== currentMidi) keys.push(detectedMidi);
     return keys;
-  }, [currentMidi, detectedMidi]);
+  }, [currentMidi]);
+
+  // Get transposed song notes
+  const transposedSong = useMemo(() => {
+    if (!selectedSong) return null;
+    return {
+      ...selectedSong,
+      notes: transpose === 0 ? selectedSong.notes : transposeMelody(selectedSong.notes, transpose)
+    };
+  }, [selectedSong, transpose]);
   
   const scaleLabels = useMemo(() => {
     if (currentMidi <= 0) return {};
     return generateScaleLabels(currentMidi);
   }, [currentMidi]);
+
+  // Compute preview keys for free mode (current + next notes with gradient opacity)
+  // Position 1 = current target, positions 2+ = upcoming notes
+  const previewKeys = useMemo((): PreviewKey[] => {
+    if (!freeMode || selectionMode !== 'song' || !transposedSong) return [];
+    
+    const startIndex = songNoteIndex; // Start from current note
+    const endIndex = Math.min(startIndex + PREVIEW_NOTE_COUNT, transposedSong.notes.length);
+    
+    // Group notes by midi number and track their positions
+    const midiPositions: Record<number, number[]> = {};
+    
+    for (let i = startIndex; i < endIndex; i++) {
+      const note = transposedSong.notes[i];
+      if (!note) continue;
+      
+      const position = i - songNoteIndex + 1; // 1 = current, 2-8 = next
+      if (!midiPositions[note.midi]) {
+        midiPositions[note.midi] = [];
+      }
+      midiPositions[note.midi].push(position);
+    }
+    
+    // Convert to PreviewKey array with opacity gradient
+    return Object.entries(midiPositions).map(([midiStr, positions]) => {
+      const midi = parseInt(midiStr, 10);
+      // Use the first (nearest) position to calculate opacity
+      const nearestPosition = Math.min(...positions);
+      // Opacity: 1.0 for position 1-2, decreasing to 0.3 for position 8
+      const opacity = 1 - (nearestPosition - 1) * 0.1;
+      
+      return {
+        midi,
+        positions,
+        opacity: Math.max(0.3, opacity)
+      };
+    });
+  }, [freeMode, selectionMode, transposedSong, songNoteIndex]);
+
+  // Update currentKey when transpose changes (only when not playing)
+  useEffect(() => {
+    if (transposedSong && !isSongPlaying && !isAutoPlaying && selectionMode === 'song') {
+      setCurrentKey(transposedSong.notes[songNoteIndex]?.note || transposedSong.notes[0]?.note || '');
+    }
+  }, [transposedSong, isSongPlaying, isAutoPlaying, selectionMode, songNoteIndex]);
 
   const isCurrentlyCorrect = pitchData && (isTimerRunning || isSongPlaying) && 
     `${pitchData.note}${pitchData.octave}` === currentKey;
@@ -763,25 +932,65 @@ export default function Pitch() {
             </div>
           )}
           {selectionMode === 'song' && selectedSong && (
-            <div className="song-progress">
-              <span className="song-title">{selectedSong.name}</span>
-              <div className="note-progress">
-                <span className="current-note">{isAutoPlaying ? autoPlayIndex + 1 : songNoteIndex + 1}</span>
-                <span className="separator">/</span>
-                <span className="total-notes">{selectedSong.notes.length}</span>
+            <>
+              <div className="song-progress">
+                <span className="song-title">{selectedSong.name}</span>
+                <div className="note-progress">
+                  <span className="current-note">{isAutoPlaying ? autoPlayIndex + 1 : songNoteIndex + 1}</span>
+                  <span className="separator">/</span>
+                  <span className="total-notes">{selectedSong.notes.length}</span>
+                </div>
+                {!isAutoPlaying && (
+                  <div className="song-score">
+                    <span className="score-value">{songScore}</span>
+                    <span className="score-label">correct</span>
+                  </div>
+                )}
+                {isAutoPlaying && (
+                  <div className="song-score listening">
+                    <span className="score-label">Listening...</span>
+                  </div>
+                )}
               </div>
-              {!isAutoPlaying && (
-                <div className="song-score">
-                  <span className="score-value">{songScore}</span>
-                  <span className="score-label">correct</span>
+              <div className="song-options">
+                <div className="transpose-controls">
+                  <button 
+                    className="transpose-btn"
+                    onClick={() => setTranspose(t => t - 1)}
+                    disabled={isSongPlaying || isAutoPlaying}
+                    title="Transpose down"
+                  >
+                    -
+                  </button>
+                  <span className="transpose-value">
+                    {transpose === 0 ? 'Original' : transpose > 0 ? `+${transpose}` : transpose}
+                  </span>
+                  <button 
+                    className="transpose-btn"
+                    onClick={() => setTranspose(t => t + 1)}
+                    disabled={isSongPlaying || isAutoPlaying}
+                    title="Transpose up"
+                  >
+                    +
+                  </button>
                 </div>
-              )}
-              {isAutoPlaying && (
-                <div className="song-score listening">
-                  <span className="score-label">Listening...</span>
-                </div>
-              )}
-            </div>
+                <button 
+                  className={`free-mode-toggle ${freeMode ? 'active' : ''}`}
+                  onClick={() => setFreeMode(f => !f)}
+                  disabled={isSongPlaying || isAutoPlaying}
+                  title={freeMode ? 'Switch to timed mode' : 'Switch to free practice (no timer)'}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    {freeMode ? (
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.2 14.2L11 13V7h1.5v5.2l4.5 2.7-.8 1.3z"/>
+                    ) : (
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"/>
+                    )}
+                  </svg>
+                  <span>{freeMode ? 'Free' : 'Timed'}</span>
+                </button>
+              </div>
+            </>
           )}
           {selectionMode !== 'song' && (
             <div className="correct-counter">
@@ -796,17 +1005,17 @@ export default function Pitch() {
         {selectionMode === 'song' ? (
           <>
             <button 
-              className={`mic-button listen-button ${isAutoPlaying ? 'active' : ''} ${!selectedSong ? 'disabled' : ''}`}
+              className={`mic-button listen-button ${isAutoPlaying ? 'active' : ''} ${!transposedSong ? 'disabled' : ''}`}
               onClick={() => {
-                if (!selectedSong) {
+                if (!transposedSong) {
                   showToast('Select a song first');
                 } else if (isAutoPlaying) {
                   stopAutoPlay();
                 } else {
-                  startAutoPlay();
+                  startAutoPlay(transposedSong.notes);
                 }
               }}
-              title={!selectedSong ? 'Select a song first' : isAutoPlaying ? 'Stop listening' : 'Listen to melody'}
+              title={!transposedSong ? 'Select a song first' : isAutoPlaying ? 'Stop listening' : 'Listen to melody'}
               disabled={isSongPlaying}
             >
               <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
@@ -820,18 +1029,18 @@ export default function Pitch() {
             </button>
             
             <button 
-              className={`mic-button ${isSongPlaying ? 'active' : ''} ${!selectedSong ? 'disabled' : ''}`}
+              className={`mic-button ${isSongPlaying ? 'active' : ''} ${!transposedSong ? 'disabled' : ''}`}
               onClick={() => {
-                if (!selectedSong) {
+                if (!transposedSong) {
                   showToast('Select a song first');
                 } else if (isSongPlaying) {
                   stopSong();
                 } else {
                   stopAutoPlay();
-                  startSong();
+                  startSong(transposedSong.notes, freeMode);
                 }
               }}
-              title={!selectedSong ? 'Select a song first' : isSongPlaying ? 'Stop practicing' : 'Start practicing'}
+              title={!transposedSong ? 'Select a song first' : isSongPlaying ? 'Stop practicing' : 'Start practicing'}
               disabled={isAutoPlaying}
             >
               <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
@@ -844,17 +1053,83 @@ export default function Pitch() {
               <span>{isSongPlaying ? 'Stop' : 'Practice'}</span>
             </button>
             
-            {(isSongPlaying || isAutoPlaying) && (
+            {isSongPlaying && freeMode && transposedSong && (
+              <div className="free-mode-controls">
+                <button 
+                  className="nav-btn skip-back"
+                  onClick={() => skipBackward(transposedSong.notes)}
+                  disabled={songNoteIndex === 0}
+                  title={`Back ${PREVIEW_NOTE_COUNT} notes`}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                    <path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/>
+                  </svg>
+                </button>
+                <button 
+                  className="nav-btn prev"
+                  onClick={() => goToPrevNote(transposedSong.notes)}
+                  disabled={songNoteIndex === 0}
+                  title="Previous note"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                  </svg>
+                </button>
+                <button 
+                  className={`nav-btn play-preview ${isPlayingPreview ? 'playing' : ''}`}
+                  onClick={() => isPlayingPreview ? stopPlayPreview() : playCurrentPreview(transposedSong.notes)}
+                  title={isPlayingPreview ? 'Stop' : `Play ${PREVIEW_NOTE_COUNT} notes`}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                    {isPlayingPreview ? (
+                      <path d="M6 6h12v12H6z"/>
+                    ) : (
+                      <path d="M8 5v14l11-7z"/>
+                    )}
+                  </svg>
+                </button>
+                <button 
+                  className="nav-btn next"
+                  onClick={() => goToNextNote(transposedSong.notes)}
+                  title="Next note"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                  </svg>
+                </button>
+                <button 
+                  className="nav-btn skip-forward"
+                  onClick={() => skipForward(transposedSong.notes)}
+                  disabled={songNoteIndex >= transposedSong.notes.length - 1}
+                  title={`Skip ${PREVIEW_NOTE_COUNT} notes`}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                    <path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/>
+                  </svg>
+                </button>
+              </div>
+            )}
+            
+            {isSongPlaying && !freeMode && (
               <div className="timer-bar-container song-timer">
                 <div 
                   className="timer-bar" 
-                  style={{ width: `${isAutoPlaying ? (100 - (autoPlayIndex / (selectedSong?.notes.length || 1)) * 100) : (100 - timerProgress)}%` }}
+                  style={{ width: `${100 - timerProgress}%` }}
                 />
                 <span className="timer-text">
-                  {isAutoPlaying 
-                    ? `${autoPlayIndex + 1}/${selectedSong?.notes.length}`
-                    : `${Math.ceil((SONG_NOTE_DURATION - (timerProgress / 100) * SONG_NOTE_DURATION) / 1000)}s`
-                  }
+                  {Math.ceil((SONG_NOTE_DURATION - (timerProgress / 100) * SONG_NOTE_DURATION) / 1000)}s
+                </span>
+              </div>
+            )}
+            
+            {isAutoPlaying && (
+              <div className="timer-bar-container song-timer">
+                <div 
+                  className="timer-bar" 
+                  style={{ width: `${100 - (autoPlayIndex / (selectedSong?.notes.length || 1)) * 100}%` }}
+                />
+                <span className="timer-text">
+                  {autoPlayIndex + 1}/{selectedSong?.notes.length}
                 </span>
               </div>
             )}
@@ -911,6 +1186,11 @@ export default function Pitch() {
             onKeyboardPlayNote={handlePianoKeyClick}
             keyboardShortcuts=""
             scaleLabels={scaleLabels}
+            previewKeys={previewKeys}
+            detectedMidi={(isTimerRunning || isSongPlaying) ? detectedMidi : undefined}
+            isCorrect={isCurrentlyCorrect || false}
+            playingPreviewMidi={playingPreviewMidi}
+            playingPulseKey={playingPulseKey}
           />
         </div>
         <div className="piano-scroll-hint">

@@ -5,7 +5,24 @@ export interface MelodyNote {
   durationMs: number;
 }
 
-export const perfectMelodyWithTiming: MelodyNote[] = [
+const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+function midiToNoteName(midi: number): string {
+  const octave = Math.floor(midi / 12) - 1;
+  const noteIndex = midi % 12;
+  return `${NOTES[noteIndex]}${octave}`;
+}
+
+function transposeNote(note: MelodyNote, semitones: number): MelodyNote {
+  const newMidi = note.midi + semitones;
+  return {
+    ...note,
+    midi: newMidi,
+    note: midiToNoteName(newMidi),
+  };
+}
+
+const originalMelody: MelodyNote[] = [
   { note: "C4", midi: 60, timeMs: 0, durationMs: 882 },
   { note: "D#4", midi: 63, timeMs: 294, durationMs: 588 },
   { note: "G#4", midi: 68, timeMs: 588, durationMs: 294 },
@@ -257,6 +274,14 @@ export const perfectMelodyWithTiming: MelodyNote[] = [
   { note: "G#4", midi: 68, timeMs: 139118, durationMs: 294 },
 ];
 
+// Export the original melody (starts at C4)
+export const perfectMelodyWithTiming: MelodyNote[] = originalMelody;
+
 export const perfectMelodyNotes = perfectMelodyWithTiming.map(n => n.note);
 
 export const perfectMelodyMidiNumbers = perfectMelodyWithTiming.map(n => n.midi);
+
+// Helper to transpose melody by semitones
+export function transposeMelody(melody: MelodyNote[], semitones: number): MelodyNote[] {
+  return melody.map(note => transposeNote(note, semitones));
+}

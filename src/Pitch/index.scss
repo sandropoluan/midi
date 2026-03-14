@@ -122,6 +122,15 @@
     .ReactPiano__Key {
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      
+      // Detected key styling (orange) - distinct from target key (green)
+      &:has(.detected-label) {
+        background: linear-gradient(to bottom, #ff9f5a 0%, #ff7b3a 100%) !important;
+        
+        &.ReactPiano__Key--accidental {
+          background: linear-gradient(to bottom, #e07030 0%, #c05020 100%) !important;
+        }
+      }
     }
     
     .scale-label {
@@ -138,6 +147,98 @@
     .ReactPiano__NoteLabel--accidental.scale-label {
       color: #fff;
       background: rgba(78, 204, 163, 0.9);
+    }
+    
+    .preview-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      padding: 2px 4px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      min-width: 18px;
+      transition: opacity 0.2s ease;
+      
+      .preview-number {
+        line-height: 1.1;
+      }
+    }
+    
+    .ReactPiano__NoteLabel--natural.preview-label {
+      color: #1a1a2e;
+    }
+    
+    .detected-label {
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      padding: 4px 6px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      background: rgba(255, 140, 66, 0.9);
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      animation: detected-pulse 0.4s ease-in-out infinite;
+    }
+    
+    .ReactPiano__NoteLabel--accidental.detected-label {
+      background: rgba(255, 120, 50, 0.95);
+    }
+    
+    @keyframes detected-pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 8px rgba(255, 140, 66, 0.6);
+      }
+      50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(255, 140, 66, 0.9);
+      }
+    }
+    
+    .playing-preview-label {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      background: rgba(255, 193, 7, 0.95);
+      color: #1a1a2e;
+      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+      animation: playing-preview-pulse 0.3s ease-out;
+      box-shadow: 
+        0 0 15px rgba(255, 193, 7, 0.8),
+        0 0 30px rgba(255, 193, 7, 0.5),
+        0 0 45px rgba(255, 193, 7, 0.3);
+    }
+    
+    .ReactPiano__NoteLabel--accidental.playing-preview-label {
+      background: rgba(255, 180, 0, 1);
+      color: #1a1a2e;
+    }
+    
+    @keyframes playing-preview-pulse {
+      0% {
+        transform: scale(1.4);
+        box-shadow: 
+          0 0 25px rgba(255, 193, 7, 1),
+          0 0 50px rgba(255, 193, 7, 0.8),
+          0 0 75px rgba(255, 193, 7, 0.5);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 
+          0 0 15px rgba(255, 193, 7, 0.8),
+          0 0 30px rgba(255, 193, 7, 0.5),
+          0 0 45px rgba(255, 193, 7, 0.3);
+      }
     }
   }
 }
@@ -1199,5 +1300,163 @@
   .score-label {
     color: #bb8fce;
     animation: pulse 1.5s ease-in-out infinite;
+  }
+}
+
+.song-options {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.free-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &.active {
+    background: rgba(78, 204, 163, 0.2);
+    border-color: rgba(78, 204, 163, 0.5);
+    color: #4ecca3;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.free-mode-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(78, 204, 163, 0.2);
+    border: 2px solid rgba(78, 204, 163, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #4ecca3;
+
+    &:hover:not(:disabled) {
+      background: rgba(78, 204, 163, 0.4);
+      transform: scale(1.1);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    &.next {
+      background: rgba(78, 204, 163, 0.3);
+    }
+    
+    &.skip-forward,
+    &.skip-back {
+      width: 36px;
+      height: 36px;
+      background: rgba(78, 204, 163, 0.15);
+      border-color: rgba(78, 204, 163, 0.4);
+      
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+    
+    &.play-preview {
+      background: rgba(255, 193, 7, 0.2);
+      border-color: rgba(255, 193, 7, 0.6);
+      color: #ffc107;
+      
+      &:hover:not(:disabled) {
+        background: rgba(255, 193, 7, 0.4);
+      }
+      
+      &.playing {
+        background: rgba(255, 107, 107, 0.3);
+        border-color: rgba(255, 107, 107, 0.7);
+        color: #ff6b6b;
+        animation: pulse-playing 1s ease-in-out infinite;
+      }
+    }
+  }
+  
+  @keyframes pulse-playing {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.transpose-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+
+  .transpose-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+    background: rgba(78, 204, 163, 0.3);
+    border: 1px solid rgba(78, 204, 163, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: rgba(78, 204, 163, 0.5);
+      transform: scale(1.1);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+  }
+
+  .transpose-value {
+    min-width: 60px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #4ecca3;
   }
 }
