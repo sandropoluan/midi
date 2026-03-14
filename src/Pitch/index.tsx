@@ -13,7 +13,54 @@ const MAJOR_SCALE_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
 const LISTENING_DURATION = 15000;
 const SONG_NOTE_DURATION = 3000;
 const ACCURACY_THRESHOLD = 80;
-const PREVIEW_NOTE_COUNT = 8; // Number of notes to preview (current + next 7)
+
+// "Perfect" by Ed Sheeran is ~68 BPM in 6/8 time
+// One measure = 60000ms / 68 BPM * 3 beats (for 6/8) ≈ 2647ms
+// 2 measures ≈ 5294ms, but we'll use a slightly larger value to be safe
+const MEASURES_PER_GROUP = 2;
+const MS_PER_MEASURE = 2647; // ~68 BPM, 6/8 time
+const MS_PER_GROUP = MEASURES_PER_GROUP * MS_PER_MEASURE;
+
+// Find measure group boundaries based on timing (every 2 measures)
+function findPhraseBoundaries(notes: MelodyNote[]): number[] {
+  if (notes.length === 0) return [0];
+  
+  const boundaries: number[] = [0];
+  const firstNoteTime = notes[0].timeMs;
+  
+  for (let i = 1; i < notes.length; i++) {
+    const currNote = notes[i];
+    const prevNote = notes[i - 1];
+    
+    // Calculate which measure group each note belongs to
+    const prevGroup = Math.floor((prevNote.timeMs - firstNoteTime) / MS_PER_GROUP);
+    const currGroup = Math.floor((currNote.timeMs - firstNoteTime) / MS_PER_GROUP);
+    
+    // If we've crossed into a new measure group, mark a boundary
+    if (currGroup > prevGroup) {
+      boundaries.push(i);
+    }
+  }
+  
+  return boundaries;
+}
+
+// Get the phrase/measure-group index for a given note index
+function getPhraseForNote(noteIndex: number, boundaries: number[]): number {
+  for (let i = boundaries.length - 1; i >= 0; i--) {
+    if (noteIndex >= boundaries[i]) {
+      return i;
+    }
+  }
+  return 0;
+}
+
+// Get the start and end indices for a phrase/measure-group
+function getPhraseRange(phraseIndex: number, boundaries: number[], totalNotes: number): { start: number; end: number } {
+  const start = boundaries[phraseIndex];
+  const end = phraseIndex < boundaries.length - 1 ? boundaries[phraseIndex + 1] : totalNotes;
+  return { start, end };
+}
 
 interface SongData {
   name: string;
@@ -438,7 +485,12 @@ export default function Pitch() {
   const skipForward = useCallback((songNotes: MelodyNote[]) => {
     if (!isSongPlaying || !freeMode) return;
     
-    const nextIndex = Math.min(songNoteIndexRef.current + PREVIEW_NOTE_COUNT, songNotes.length - 1);
+    // Find phrase boundaries and jump to next phrase
+    const boundaries = findPhraseBoundaries(songNotes);
+    const currentPhrase = getPhraseForNote(songNoteIndexRef.current, boundaries);
+    const nextPhrase = Math.min(currentPhrase + 1, boundaries.length - 1);
+    const nextIndex = boundaries[nextPhrase];
+    
     setSongNoteIndex(nextIndex);
     setCurrentKey(songNotes[nextIndex].note);
     correctSamplesRef.current = 0;
@@ -449,9 +501,22 @@ export default function Pitch() {
   const skipBackward = useCallback((songNotes: MelodyNote[]) => {
     if (!isSongPlaying || !freeMode) return;
     
-    const prevIndex = Math.max(0, songNoteIndexRef.current - PREVIEW_NOTE_COUNT);
-    setSongNoteIndex(prevIndex);
-    setCurrentKey(songNotes[prevIndex].note);
+    // Find phrase boundaries and jump to previous phrase
+    const boundaries = findPhraseBoundaries(songNotes);
+    const currentPhrase = getPhraseForNote(songNoteIndexRef.current, boundaries);
+    const { start } = getPhraseRange(currentPhrase, boundaries, songNotes.length);
+    
+    // If we're at the start of current phrase, go to previous phrase
+    // Otherwise, go to start of current phrase
+    let targetIndex: number;
+    if (songNoteIndexRef.current === start && currentPhrase > 0) {
+      targetIndex = boundaries[currentPhrase - 1];
+    } else {
+      targetIndex = start;
+    }
+    
+    setSongNoteIndex(targetIndex);
+    setCurrentKey(songNotes[targetIndex].note);
     correctSamplesRef.current = 0;
     totalSamplesRef.current = 0;
     setAccuracy(0);
@@ -475,9 +540,11 @@ export default function Pitch() {
   const playCurrentPreview = useCallback((songNotes: MelodyNote[]) => {
     if (!freeMode || isPlayingPreview) return;
     
-    const startIndex = songNoteIndexRef.current;
-    const endIndex = Math.min(startIndex + PREVIEW_NOTE_COUNT, songNotes.length);
-    const previewNotes = songNotes.slice(startIndex, endIndex);
+    // Play the current phrase
+    const boundaries = findPhraseBoundaries(songNotes);
+    const currentPhrase = getPhraseForNote(songNoteIndexRef.current, boundaries);
+    const { start, end } = getPhraseRange(currentPhrase, boundaries, songNotes.length);
+    const previewNotes = songNotes.slice(start, end);
     
     if (previewNotes.length === 0) return;
     
@@ -698,22 +765,35 @@ export default function Pitch() {
     return generateScaleLabels(currentMidi);
   }, [currentMidi]);
 
-  // Compute preview keys for free mode (current + next notes with gradient opacity)
-  // Position 1 = current target, positions 2+ = upcoming notes
+  // Compute phrase boundaries for the current song
+  const phraseBoundaries = useMemo(() => {
+    if (!transposedSong) return [];
+    return findPhraseBoundaries(transposedSong.notes);
+  }, [transposedSong]);
+
+  // Get current phrase info
+  const currentPhraseInfo = useMemo(() => {
+    if (!transposedSong || phraseBoundaries.length === 0) return null;
+    const phraseIndex = getPhraseForNote(songNoteIndex, phraseBoundaries);
+    const { start, end } = getPhraseRange(phraseIndex, phraseBoundaries, transposedSong.notes.length);
+    return { phraseIndex, start, end, total: phraseBoundaries.length };
+  }, [transposedSong, phraseBoundaries, songNoteIndex]);
+
+  // Compute preview keys for free mode - show all notes in current phrase
+  // Position 1 = current target, positions 2+ = upcoming notes in phrase
   const previewKeys = useMemo((): PreviewKey[] => {
-    if (!freeMode || selectionMode !== 'song' || !transposedSong) return [];
+    if (!freeMode || selectionMode !== 'song' || !transposedSong || !currentPhraseInfo) return [];
     
-    const startIndex = songNoteIndex; // Start from current note
-    const endIndex = Math.min(startIndex + PREVIEW_NOTE_COUNT, transposedSong.notes.length);
+    const { start, end } = currentPhraseInfo;
     
     // Group notes by midi number and track their positions
     const midiPositions: Record<number, number[]> = {};
     
-    for (let i = startIndex; i < endIndex; i++) {
+    for (let i = start; i < end; i++) {
       const note = transposedSong.notes[i];
       if (!note) continue;
       
-      const position = i - songNoteIndex + 1; // 1 = current, 2-8 = next
+      const position = i - songNoteIndex + 1; // 1 = current, negative = passed
       if (!midiPositions[note.midi]) {
         midiPositions[note.midi] = [];
       }
@@ -721,12 +801,14 @@ export default function Pitch() {
     }
     
     // Convert to PreviewKey array with opacity gradient
+    const phraseLength = end - start;
     return Object.entries(midiPositions).map(([midiStr, positions]) => {
       const midi = parseInt(midiStr, 10);
       // Use the first (nearest) position to calculate opacity
       const nearestPosition = Math.min(...positions);
-      // Opacity: 1.0 for position 1-2, decreasing to 0.3 for position 8
-      const opacity = 1 - (nearestPosition - 1) * 0.1;
+      // Opacity based on distance from current note, scaled to phrase length
+      const opacityStep = phraseLength > 1 ? 0.6 / phraseLength : 0;
+      const opacity = 1 - Math.abs(nearestPosition - 1) * opacityStep;
       
       return {
         midi,
@@ -734,7 +816,7 @@ export default function Pitch() {
         opacity: Math.max(0.3, opacity)
       };
     });
-  }, [freeMode, selectionMode, transposedSong, songNoteIndex]);
+  }, [freeMode, selectionMode, transposedSong, songNoteIndex, currentPhraseInfo]);
 
   // Update currentKey when transpose changes (only when not playing)
   useEffect(() => {
@@ -935,6 +1017,14 @@ export default function Pitch() {
             <>
               <div className="song-progress">
                 <span className="song-title">{selectedSong.name}</span>
+                {currentPhraseInfo && (
+                  <div className="phrase-progress">
+                    <span className="phrase-label">Line</span>
+                    <span className="current-phrase">{currentPhraseInfo.phraseIndex + 1}</span>
+                    <span className="separator">/</span>
+                    <span className="total-phrases">{currentPhraseInfo.total}</span>
+                  </div>
+                )}
                 <div className="note-progress">
                   <span className="current-note">{isAutoPlaying ? autoPlayIndex + 1 : songNoteIndex + 1}</span>
                   <span className="separator">/</span>
@@ -1058,8 +1148,8 @@ export default function Pitch() {
                 <button 
                   className="nav-btn skip-back"
                   onClick={() => skipBackward(transposedSong.notes)}
-                  disabled={songNoteIndex === 0}
-                  title={`Back ${PREVIEW_NOTE_COUNT} notes`}
+                  disabled={!currentPhraseInfo || (currentPhraseInfo.phraseIndex === 0 && songNoteIndex === currentPhraseInfo.start)}
+                  title="Previous line"
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                     <path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/>
@@ -1078,7 +1168,7 @@ export default function Pitch() {
                 <button 
                   className={`nav-btn play-preview ${isPlayingPreview ? 'playing' : ''}`}
                   onClick={() => isPlayingPreview ? stopPlayPreview() : playCurrentPreview(transposedSong.notes)}
-                  title={isPlayingPreview ? 'Stop' : `Play ${PREVIEW_NOTE_COUNT} notes`}
+                  title={isPlayingPreview ? 'Stop' : 'Play current line'}
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                     {isPlayingPreview ? (
@@ -1100,8 +1190,8 @@ export default function Pitch() {
                 <button 
                   className="nav-btn skip-forward"
                   onClick={() => skipForward(transposedSong.notes)}
-                  disabled={songNoteIndex >= transposedSong.notes.length - 1}
-                  title={`Skip ${PREVIEW_NOTE_COUNT} notes`}
+                  disabled={!currentPhraseInfo || currentPhraseInfo.phraseIndex >= currentPhraseInfo.total - 1}
+                  title="Next line"
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                     <path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/>
