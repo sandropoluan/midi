@@ -5,6 +5,7 @@ import { usePitchDetection } from '../hooks/usePitchDetection';
 import { usePianoSound } from '../hooks/usePianoSound';
 import { perfectMelodyWithTiming, MelodyNote, transposeMelody } from '../data/perfectMelody';
 import { perfectFullMelody } from '../data/perfectFullMelody';
+import { nothingsGonnaChangeMelody } from '../data/nothingsGonnaChangeMelody';
 import './index.scss';
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -71,6 +72,7 @@ interface SongData {
 const AVAILABLE_SONGS: SongData[] = [
   { name: 'Perfect (Intro)', artist: 'Ed Sheeran', notes: perfectMelodyWithTiming },
   { name: 'Perfect (Full)', artist: 'Ed Sheeran', notes: perfectFullMelody },
+  { name: "Nothing's Gonna Change My Love for You", artist: 'George Benson', notes: nothingsGonnaChangeMelody },
 ];
 
 const noteNameToMidi = (noteName: string): number => {
@@ -780,35 +782,43 @@ export default function Pitch() {
   }, [transposedSong, phraseBoundaries, songNoteIndex]);
 
   // Compute preview keys for free mode - show all notes in current phrase
-  // Position 1 = current target, positions 2+ = upcoming notes in phrase
+  // Position numbers are relative to start of phrase (1, 2, 3, etc.)
   const previewKeys = useMemo((): PreviewKey[] => {
     if (!freeMode || selectionMode !== 'song' || !transposedSong || !currentPhraseInfo) return [];
     
     const { start, end } = currentPhraseInfo;
     
-    // Group notes by midi number and track their positions
+    // Group notes by midi number and track their positions (1-indexed from phrase start)
     const midiPositions: Record<number, number[]> = {};
     
     for (let i = start; i < end; i++) {
       const note = transposedSong.notes[i];
       if (!note) continue;
       
-      const position = i - songNoteIndex + 1; // 1 = current, negative = passed
+      const position = i - start + 1; // Position within phrase (1, 2, 3, etc.)
       if (!midiPositions[note.midi]) {
         midiPositions[note.midi] = [];
       }
       midiPositions[note.midi].push(position);
     }
     
+    // Current note's position within the phrase
+    const currentPositionInPhrase = songNoteIndex - start + 1;
+    
     // Convert to PreviewKey array with opacity gradient
     const phraseLength = end - start;
     return Object.entries(midiPositions).map(([midiStr, positions]) => {
       const midi = parseInt(midiStr, 10);
-      // Use the first (nearest) position to calculate opacity
-      const nearestPosition = Math.min(...positions);
-      // Opacity based on distance from current note, scaled to phrase length
+      // Find the nearest position to current note for opacity calculation
+      const nearestToCurrentPosition = positions.reduce((nearest, pos) => {
+        const distToCurrent = Math.abs(pos - currentPositionInPhrase);
+        const nearestDist = Math.abs(nearest - currentPositionInPhrase);
+        return distToCurrent < nearestDist ? pos : nearest;
+      }, positions[0]);
+      // Opacity based on distance from current note position
+      const distanceFromCurrent = Math.abs(nearestToCurrentPosition - currentPositionInPhrase);
       const opacityStep = phraseLength > 1 ? 0.6 / phraseLength : 0;
-      const opacity = 1 - Math.abs(nearestPosition - 1) * opacityStep;
+      const opacity = 1 - distanceFromCurrent * opacityStep;
       
       return {
         midi,
