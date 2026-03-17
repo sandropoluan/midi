@@ -6,6 +6,8 @@ import { usePianoSound } from '../hooks/usePianoSound';
 import { perfectMelodyWithTiming, MelodyNote, transposeMelody } from '../data/perfectMelody';
 import { perfectFullMelody } from '../data/perfectFullMelody';
 import { nothingsGonnaChangeMelody } from '../data/nothingsGonnaChangeMelody';
+import { wellermanMelody } from '../data/wellermanMelody';
+import { saySomethingMelody } from '../data/saySomethingMelody';
 import './index.scss';
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -73,6 +75,8 @@ const AVAILABLE_SONGS: SongData[] = [
   { name: 'Perfect (Intro)', artist: 'Ed Sheeran', notes: perfectMelodyWithTiming },
   { name: 'Perfect (Full)', artist: 'Ed Sheeran', notes: perfectFullMelody },
   { name: "Nothing's Gonna Change My Love for You", artist: 'George Benson', notes: nothingsGonnaChangeMelody },
+  { name: 'Wellerman', artist: 'Sea Shanty', notes: wellermanMelody },
+  { name: 'Say Something', artist: 'A Great Big World ft. Christina Aguilera', notes: saySomethingMelody },
 ];
 
 const noteNameToMidi = (noteName: string): number => {
